@@ -17,70 +17,80 @@ let booksData = [
         title: "The Great Gatsby",
         author: "F. Scott Fitzgerald",
         category: "Fiction",
-        year: 1925
+        year: 1925,
+        image: "https://covers.openlibrary.org/b/id/7222246-L.jpg"
     },
     {
         id: 2,
         title: "To Kill a Mockingbird",
         author: "Harper Lee",
         category: "Fiction",
-        year: 1960
+        year: 1960,
+        image: "https://covers.openlibrary.org/b/id/8228691-L.jpg"
     },
     {
         id: 3,
         title: "1984",
         author: "George Orwell",
         category: "Fiction",
-        year: 1949
+        year: 1949,
+        image: "https://covers.openlibrary.org/b/id/7222246-L.jpg"
     },
     {
         id: 4,
         title: "Pride and Prejudice",
         author: "Jane Austen",
         category: "Fiction",
-        year: 1813
+        year: 1813,
+        image: "https://covers.openlibrary.org/b/id/8235657-L.jpg"
     },
     {
         id: 5,
         title: "The Catcher in the Rye",
         author: "J.D. Salinger",
         category: "Fiction",
-        year: 1951
+        year: 1951,
+        image: "https://covers.openlibrary.org/b/id/8228691-L.jpg"
     },
     {
         id: 6,
         title: "Sapiens",
         author: "Yuval Noah Harari",
         category: "History",
-        year: 2011
+        year: 2011,
+        image: "https://covers.openlibrary.org/b/id/8235657-L.jpg"
     },
     {
         id: 7,
         title: "Educated",
         author: "Tara Westover",
         category: "Biography",
-        year: 2018
+        year: 2018,
+        image: "https://covers.openlibrary.org/b/id/7222246-L.jpg"
     },
     {
         id: 8,
         title: "Atomic Habits",
         author: "James Clear",
         category: "Self-Help",
-        year: 2018
+        year: 2018,
+        image: "https://covers.openlibrary.org/b/id/8228691-L.jpg"
     },
     {
         id: 9,
         title: "The Lean Startup",
         author: "Eric Ries",
         category: "Business",
-        year: 2011
+        year: 2011,
+        image: "https://covers.openlibrary.org/b/id/8235657-L.jpg"
     },
     {
         id: 10,
         title: "A Brief History of Time",
         author: "Stephen Hawking",
         category: "Science",
-        year: 1988
+        year: 1988,
+        image: "https://covers.openlibrary.org/b/id/7222246-L.jpg"
     }
 ];
 
@@ -93,6 +103,11 @@ let bookToDelete = null;
  * Global state for tracking current book being edited
  */
 let bookToEdit = null;
+
+/**
+ * Global state for storing uploaded image preview
+ */
+let uploadedImageData = null;
 
 // ========================================
 // LOGIN PAGE FUNCTIONS
@@ -315,7 +330,12 @@ function renderBooksTable() {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${book.id}</td>
-            <td>${escapeHtml(book.title)}</td>
+            <td>
+                <div class="book-title-with-image">
+                    <img src="${book.image || 'https://via.placeholder.com/40x60?text=No+Cover'}" alt="${escapeHtml(book.title)}" class="book-thumbnail">
+                    <span>${escapeHtml(book.title)}</span>
+                </div>
+            </td>
             <td>${escapeHtml(book.author)}</td>
             <td>${escapeHtml(book.category)}</td>
             <td>${book.year}</td>
@@ -339,6 +359,7 @@ function renderBooksTable() {
  */
 function openAddBookModal() {
     bookToEdit = null;
+    uploadedImageData = null;
     
     // Update modal title
     const modalTitle = document.getElementById('modalTitle');
@@ -351,6 +372,13 @@ function openAddBookModal() {
     // Clear form
     document.getElementById('bookForm').reset();
     document.getElementById('bookId').value = '';
+    
+    // Clear image preview
+    const imagePreview = document.getElementById('imagePreview');
+    if (imagePreview) {
+        imagePreview.style.display = 'none';
+        imagePreview.src = '';
+    }
     
     // Show modal
     showModal('bookModal');
@@ -366,6 +394,7 @@ function openEditBookModal(bookId) {
     if (!book) return;
     
     bookToEdit = book;
+    uploadedImageData = book.image;
     
     // Update modal title
     const modalTitle = document.getElementById('modalTitle');
@@ -381,6 +410,14 @@ function openEditBookModal(bookId) {
     document.getElementById('bookAuthor').value = book.author;
     document.getElementById('bookCategory').value = book.category;
     document.getElementById('bookYear').value = book.year;
+    document.getElementById('bookImageUrl').value = book.image || '';
+    
+    // Show image preview if exists
+    const imagePreview = document.getElementById('imagePreview');
+    if (imagePreview && book.image) {
+        imagePreview.src = book.image;
+        imagePreview.style.display = 'block';
+    }
     
     // Show modal
     showModal('bookModal');
@@ -396,6 +433,10 @@ function handleBookFormSubmit() {
     const author = document.getElementById('bookAuthor').value.trim();
     const category = document.getElementById('bookCategory').value;
     const year = parseInt(document.getElementById('bookYear').value);
+    const imageUrl = document.getElementById('bookImageUrl').value.trim();
+    
+    // Use uploaded image data or URL input
+    const image = uploadedImageData || imageUrl || 'https://via.placeholder.com/300x450?text=No+Cover';
     
     // Validate inputs
     if (!title || !author || !category || !year) {
@@ -410,10 +451,10 @@ function handleBookFormSubmit() {
     
     if (bookId) {
         // Edit existing book
-        updateBook(parseInt(bookId), { title, author, category, year });
+        updateBook(parseInt(bookId), { title, author, category, year, image });
     } else {
         // Add new book
-        addBook({ title, author, category, year });
+        addBook({ title, author, category, year, image });
     }
     
     // Close modal
@@ -569,12 +610,78 @@ function deleteBook(bookId) {
 }
 
 /**
+ * Handle image file upload
+ * Converts image to base64 for preview and storage
+ */
+function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file');
+        return;
+    }
+    
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+        alert('Image size should be less than 2MB');
+        return;
+    }
+    
+    // Read and preview image
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        uploadedImageData = e.target.result;
+        
+        // Show preview
+        const imagePreview = document.getElementById('imagePreview');
+        if (imagePreview) {
+            imagePreview.src = e.target.result;
+            imagePreview.style.display = 'block';
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+/**
+ * Handle image URL input change
+ * Shows preview of the image from URL
+ */
+function handleImageUrlChange() {
+    const imageUrl = document.getElementById('bookImageUrl').value.trim();
+    const imagePreview = document.getElementById('imagePreview');
+    
+    if (imageUrl && imagePreview) {
+        uploadedImageData = imageUrl;
+        imagePreview.src = imageUrl;
+        imagePreview.style.display = 'block';
+        
+        // Handle image load error
+        imagePreview.onerror = function() {
+            imagePreview.style.display = 'none';
+            alert('Failed to load image from URL');
+        };
+    } else if (imagePreview) {
+        imagePreview.style.display = 'none';
+    }
+}
+
+/**
  * Close book add/edit modal
  */
 function closeBookModal() {
     hideModal('bookModal');
     document.getElementById('bookForm').reset();
     bookToEdit = null;
+    uploadedImageData = null;
+    
+    // Clear image preview
+    const imagePreview = document.getElementById('imagePreview');
+    if (imagePreview) {
+        imagePreview.style.display = 'none';
+        imagePreview.src = '';
+    }
 }
 
 /**
@@ -639,16 +746,24 @@ function createBookCard(book) {
     card.className = 'book-card';
     
     card.innerHTML = `
-        <div class="book-card-header">
-            <h3 class="book-title">${escapeHtml(book.title)}</h3>
-            <p class="book-author">by ${escapeHtml(book.author)}</p>
+        <div class="book-card-image">
+            <img src="${book.image || 'https://via.placeholder.com/300x450?text=No+Cover'}" 
+                 alt="${escapeHtml(book.title)}" 
+                 class="book-cover"
+                 onerror="this.src='https://via.placeholder.com/300x450?text=No+Cover'">
         </div>
-        <div class="book-card-body">
-            <div class="book-meta">
-                <span class="book-meta-label">Year:</span>
-                <span>${book.year}</span>
+        <div class="book-card-content">
+            <div class="book-card-header">
+                <h3 class="book-title">${escapeHtml(book.title)}</h3>
+                <p class="book-author">by ${escapeHtml(book.author)}</p>
             </div>
-            <span class="book-category">${escapeHtml(book.category)}</span>
+            <div class="book-card-body">
+                <div class="book-meta">
+                    <span class="book-meta-label">Year:</span>
+                    <span>${book.year}</span>
+                </div>
+                <span class="book-category">${escapeHtml(book.category)}</span>
+            </div>
         </div>
     `;
     
