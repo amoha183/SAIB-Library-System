@@ -1,0 +1,56 @@
+<!-- ========================================
+     SAIB LIBRARY - NAVIGATION BAR COMPONENT
+     Reusable navigation component for all pages
+     ======================================== -->
+
+<nav class="navbar">
+    <div class="navbar-container">
+        <!-- Brand/Logo Section -->
+        <div class="navbar-brand">
+            <h2>SAIB Library</h2>
+            <!-- Badge will be dynamically added based on user type -->
+            <span class="badge badge-customer">Customer</span>
+        </div>
+        
+        <!-- Navigation Menu -->
+        <ul class="navbar-menu">
+            <li>
+                <a href="customer.html" class="nav-link">
+                    Browse Books
+                </a>
+            </li>
+            <li>
+                <a href="admin.html" class="nav-link">
+                    Admin Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="index.html" class="nav-link" onclick="handleLogout()">
+                    Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- 
+    USAGE INSTRUCTIONS:
+    
+    This is a reusable navigation bar component that can be included in any page.
+    
+    To use this component:
+    1. Include it in your HTML page using JavaScript or server-side includes
+    2. Update the active class on nav-link based on current page
+    3. Update the badge class (badge-admin or badge-customer) based on user type
+    
+    Example JavaScript to load this component:
+    
+    fetch('components/navbar.html')
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('navbar-container').innerHTML = html;
+        });
+    
+    Or simply copy the HTML structure directly into your pages.
+-->
+

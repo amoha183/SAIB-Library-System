@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAIB Library - Browse Books</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="customer-page">
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h2>SAIB Library</h2>
+                <span class="badge badge-customer">Customer</span>
+            </div>
+            <ul class="navbar-menu">
+                <li><a href="customer.html" class="nav-link active">Browse Books</a></li>
+                <li><a href="admin.html" class="nav-link">Admin Dashboard</a></li>
+                <li><a href="index.html" class="nav-link" onclick="handleLogout()">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Page Header with Search -->
+            <div class="page-header">
+                <div class="header-content">
+                    <h1 class="page-title">Browse Our Collection</h1>
+                    <p class="page-subtitle">Discover your next favorite book</p>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="Search books by title, author, or category..."
+                    onkeyup="handleSearch()"
+                >
+                <span class="search-icon">🔍</span>
+            </div>
+
+            <!-- Books Grid -->
+            <div class="books-grid" id="booksGrid">
+                <!-- Book cards will be dynamically rendered here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <p>No books found matching your search.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 SAIB Library. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Include JavaScript -->
+    <script src="assets/js/app.js"></script>
+    <script>
+        // Initialize customer page
+        initCustomerPage();
+    </script>
+</body>
+</html>
+

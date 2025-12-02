@@ -1,0 +1,70 @@
+<!-- ========================================
+     SAIB LIBRARY - BOOK CARD COMPONENT
+     Reusable book card template for customer view
+     ======================================== -->
+
+<div class="book-card">
+    <!-- Book Header -->
+    <div class="book-card-header">
+        <h3 class="book-title">Book Title</h3>
+        <p class="book-author">by Author Name</p>
+    </div>
+    
+    <!-- Book Details -->
+    <div class="book-card-body">
+        <!-- Year Information -->
+        <div class="book-meta">
+            <span class="book-meta-label">Year:</span>
+            <span>2024</span>
+        </div>
+        
+        <!-- Category Badge -->
+        <span class="book-category">Category</span>
+    </div>
+</div>
+
+<!-- 
+    USAGE INSTRUCTIONS:
+    
+    This is a reusable book card component for displaying books in the customer view.
+    
+    To use this component dynamically with JavaScript:
+    
+    function createBookCard(book) {
+        const card = document.createElement('div');
+        card.className = 'book-card';
+        
+        card.innerHTML = `
+            <div class="book-card-header">
+                <h3 class="book-title">${book.title}</h3>
+                <p class="book-author">by ${book.author}</p>
+            </div>
+            <div class="book-card-body">
+                <div class="book-meta">
+                    <span class="book-meta-label">Year:</span>
+                    <span>${book.year}</span>
+                </div>
+                <span class="book-category">${book.category}</span>
+            </div>
+        `;
+        
+        return card;
+    }
+    
+    // Then append to grid:
+    const booksGrid = document.getElementById('booksGrid');
+    booksData.forEach(book => {
+        const card = createBookCard(book);
+        booksGrid.appendChild(card);
+    });
+    
+    FEATURES:
+    - Clean, modern card design
+    - Hover effects (defined in CSS)
+    - Responsive layout
+    - Easy to customize
+    
+    STYLING:
+    All styles are defined in assets/css/style.css under the .book-card class
+-->
+

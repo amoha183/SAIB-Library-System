@@ -1,0 +1,110 @@
+<!-- ========================================
+     SAIB LIBRARY - MODAL COMPONENT
+     Reusable modal template for dialogs and forms
+     ======================================== -->
+
+<!-- Modal Container -->
+<div id="exampleModal" class="modal">
+    <!-- Overlay (darkened background) -->
+    <div class="modal-overlay" onclick="closeModal('exampleModal')"></div>
+    
+    <!-- Modal Content -->
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h2>Modal Title</h2>
+            <button class="modal-close" onclick="closeModal('exampleModal')">
+                &times;
+            </button>
+        </div>
+        
+        <!-- Modal Body -->
+        <div class="modal-body">
+            <p>Modal content goes here...</p>
+            
+            <!-- Example Form -->
+            <form id="exampleForm">
+                <div class="form-group">
+                    <label for="exampleInput" class="form-label">Input Label</label>
+                    <input 
+                        type="text" 
+                        id="exampleInput" 
+                        class="form-input" 
+                        placeholder="Enter value"
+                        required
+                    >
+                </div>
+            </form>
+        </div>
+        
+        <!-- Modal Footer -->
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('exampleModal')">
+                Cancel
+            </button>
+            <button type="button" class="btn btn-primary">
+                Save
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 
+    USAGE INSTRUCTIONS:
+    
+    This is a reusable modal component that can be customized for different purposes.
+    
+    BASIC USAGE:
+    
+    1. Copy this HTML structure into your page
+    2. Change the modal ID to something meaningful (e.g., "bookModal", "deleteModal")
+    3. Update the modal title, body content, and footer buttons
+    4. Implement open/close functions
+    
+    JAVASCRIPT FUNCTIONS:
+    
+    // Show modal
+    function showModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
+        }
+    }
+    
+    // Hide modal
+    function hideModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('show');
+            document.body.style.overflow = ''; // Restore scroll
+        }
+    }
+    
+    EXAMPLE IMPLEMENTATIONS:
+    
+    1. CONFIRMATION MODAL (Small):
+       - Add class "modal-small" to modal-content
+       - Simple yes/no buttons
+       - Used for delete confirmations
+    
+    2. FORM MODAL (Default):
+       - Standard size
+       - Contains form inputs
+       - Used for add/edit operations
+    
+    3. LARGE MODAL:
+       - Can be extended with custom max-width
+       - Used for detailed views
+    
+    FEATURES:
+    - Click overlay to close
+    - Press ESC key to close (handled in app.js)
+    - Smooth animations
+    - Fully responsive
+    - Accessible design
+    
+    STYLING:
+    All modal styles are defined in assets/css/style.css
+-->
+
