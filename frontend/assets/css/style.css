@@ -161,6 +161,12 @@ p {
     margin: 0;
 }
 
+.navbar-logo {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+}
+
 .navbar-menu {
     display: flex;
     list-style: none;
@@ -380,6 +386,13 @@ p {
 .login-header {
     text-align: center;
     margin-bottom: var(--spacing-2xl);
+}
+
+.login-logo {
+    max-width: 120px;
+    height: auto;
+    margin: 0 auto var(--spacing-lg);
+    display: block;
 }
 
 .brand-title {
