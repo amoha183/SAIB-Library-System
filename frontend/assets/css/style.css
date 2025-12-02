@@ -481,9 +481,15 @@ p {
     left: var(--spacing-md);
     top: 50%;
     transform: translateY(-50%);
-    font-size: var(--font-size-xl);
+    width: 20px;
+    height: 20px;
     color: var(--gray-400);
     pointer-events: none;
+    transition: color var(--transition-fast);
+}
+
+.search-input:focus ~ .search-icon {
+    color: var(--primary-color);
 }
 
 /* ========================================
