@@ -18,7 +18,7 @@ let booksData = [
         author: "F. Scott Fitzgerald",
         category: "Fiction",
         year: 1925,
-        image: "https://covers.openlibrary.org/b/id/7222246-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780743273565-L.jpg"
     },
     {
         id: 2,
@@ -26,7 +26,7 @@ let booksData = [
         author: "Harper Lee",
         category: "Fiction",
         year: 1960,
-        image: "https://covers.openlibrary.org/b/id/8228691-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780061120084-L.jpg"
     },
     {
         id: 3,
@@ -34,7 +34,7 @@ let booksData = [
         author: "George Orwell",
         category: "Fiction",
         year: 1949,
-        image: "https://covers.openlibrary.org/b/id/7222246-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780451524935-L.jpg"
     },
     {
         id: 4,
@@ -42,7 +42,7 @@ let booksData = [
         author: "Jane Austen",
         category: "Fiction",
         year: 1813,
-        image: "https://covers.openlibrary.org/b/id/8235657-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780141439518-L.jpg"
     },
     {
         id: 5,
@@ -50,7 +50,7 @@ let booksData = [
         author: "J.D. Salinger",
         category: "Fiction",
         year: 1951,
-        image: "https://covers.openlibrary.org/b/id/8228691-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780316769488-L.jpg"
     },
     {
         id: 6,
@@ -58,7 +58,7 @@ let booksData = [
         author: "Yuval Noah Harari",
         category: "History",
         year: 2011,
-        image: "https://covers.openlibrary.org/b/id/8235657-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780062316097-L.jpg"
     },
     {
         id: 7,
@@ -66,7 +66,7 @@ let booksData = [
         author: "Tara Westover",
         category: "Biography",
         year: 2018,
-        image: "https://covers.openlibrary.org/b/id/7222246-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780399590504-L.jpg"
     },
     {
         id: 8,
@@ -74,7 +74,7 @@ let booksData = [
         author: "James Clear",
         category: "Self-Help",
         year: 2018,
-        image: "https://covers.openlibrary.org/b/id/8228691-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg"
     },
     {
         id: 9,
@@ -82,7 +82,7 @@ let booksData = [
         author: "Eric Ries",
         category: "Business",
         year: 2011,
-        image: "https://covers.openlibrary.org/b/id/8235657-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780307887894-L.jpg"
     },
     {
         id: 10,
@@ -90,7 +90,7 @@ let booksData = [
         author: "Stephen Hawking",
         category: "Science",
         year: 1988,
-        image: "https://covers.openlibrary.org/b/id/7222246-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780553380163-L.jpg"
     }
 ];
 
