@@ -114,6 +114,65 @@ let uploadedImageData = null;
  */
 let currentSortOption = 'default';
 
+/**
+ * Global state for customers data
+ */
+let customersData = [
+    {
+        id: 1,
+        name: "John Doe",
+        email: "john.doe@example.com",
+        phone: "+1 234-567-8901",
+        joinedDate: "2024-01-15",
+        password: "password123"
+    },
+    {
+        id: 2,
+        name: "Jane Smith",
+        email: "jane.smith@example.com",
+        phone: "+1 234-567-8902",
+        joinedDate: "2024-02-20",
+        password: "password123"
+    },
+    {
+        id: 3,
+        name: "Mike Johnson",
+        email: "mike.johnson@example.com",
+        phone: "+1 234-567-8903",
+        joinedDate: "2024-03-10",
+        password: "password123"
+    }
+];
+
+/**
+ * Global state for admins data
+ */
+let adminsData = [
+    {
+        id: 1,
+        name: "Admin User",
+        email: "admin@saib.com",
+        phone: "+1 234-567-9001",
+        role: "Admin",
+        password: "admin123"
+    },
+    {
+        id: 2,
+        name: "Super Admin",
+        email: "superadmin@saib.com",
+        phone: "+1 234-567-9002",
+        role: "Super Admin",
+        password: "superadmin123"
+    }
+];
+
+/**
+ * Global state for tracking current user being edited/deleted
+ */
+let userToEdit = null;
+let userToDelete = null;
+let deleteItemType = null;
+
 // ========================================
 // LOGIN PAGE FUNCTIONS
 // ========================================
@@ -202,9 +261,14 @@ function handleLogin() {
     generalError.style.color = '#1976d2';
     
     setTimeout(() => {
+        // Check if email contains "superadmin" - redirect to superadmin page
+        if (email.toLowerCase().includes('superadmin')) {
+            sessionStorage.setItem('userType', 'superadmin');
+            sessionStorage.setItem('userEmail', email);
+            window.location.href = 'superadmin.html';
+        }
         // Check if email contains "admin" - redirect to admin page
-        if (email.toLowerCase().includes('admin')) {
-            // Store user type in sessionStorage for future use
+        else if (email.toLowerCase().includes('admin')) {
             sessionStorage.setItem('userType', 'admin');
             sessionStorage.setItem('userEmail', email);
             window.location.href = 'admin.html';
@@ -926,10 +990,11 @@ function escapeHtml(text) {
 
 /**
  * Format date to readable string
- * @param {Date} date - Date object
+ * @param {Date|string} date - Date object or date string
  * @returns {string} - Formatted date string
  */
 function formatDate(date) {
+    if (!date) return 'N/A';
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(date).toLocaleDateString('en-US', options);
 }
@@ -957,6 +1022,395 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
+
+// ========================================
+// SUPER ADMIN PAGE FUNCTIONS
+// ========================================
+
+/**
+ * Initialize super admin dashboard
+ * Sets up all tabs and loads initial data
+ */
+function initSuperAdminPage() {
+    loadBooks();
+    renderBooksTable();
+    renderCustomersTable();
+    renderAdminsTable();
+    
+    // Setup book form submission handler
+    const bookForm = document.getElementById('bookForm');
+    if (bookForm) {
+        bookForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleBookFormSubmit();
+        });
+    }
+    
+    // Setup user form submission handler
+    const userForm = document.getElementById('userForm');
+    if (userForm) {
+        userForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleUserFormSubmit();
+        });
+    }
+}
+
+/**
+ * Switch between tabs in super admin dashboard
+ * @param {string} tabName - Name of tab to switch to ('books', 'customers', 'admins')
+ */
+function switchTab(tabName) {
+    // Remove active class from all tabs
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(btn => btn.classList.remove('active'));
+    
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(content => content.classList.remove('active'));
+    
+    // Add active class to selected tab
+    const activeButton = Array.from(tabButtons).find(btn => 
+        btn.textContent.toLowerCase().includes(tabName)
+    );
+    if (activeButton) {
+        activeButton.classList.add('active');
+    }
+    
+    // Show corresponding content
+    const contentMap = {
+        'books': 'booksTab',
+        'customers': 'customersTab',
+        'admins': 'adminsTab'
+    };
+    
+    const activeContent = document.getElementById(contentMap[tabName]);
+    if (activeContent) {
+        activeContent.classList.add('active');
+    }
+}
+
+/**
+ * Render customers in table
+ */
+function renderCustomersTable() {
+    const tableBody = document.getElementById('customersTableBody');
+    const emptyState = document.getElementById('customersEmptyState');
+    
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '';
+    
+    if (customersData.length === 0) {
+        if (emptyState) emptyState.style.display = 'block';
+        return;
+    }
+    
+    if (emptyState) emptyState.style.display = 'none';
+    
+    customersData.forEach(customer => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${customer.id}</td>
+            <td>${escapeHtml(customer.name)}</td>
+            <td>${escapeHtml(customer.email)}</td>
+            <td>${escapeHtml(customer.phone)}</td>
+            <td>${formatDate(customer.joinedDate)}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn btn-sm btn-edit" onclick="openEditUserModal(${customer.id}, 'customer')">
+                        Edit
+                    </button>
+                    <button class="btn btn-sm btn-delete" onclick="openDeleteUserModal(${customer.id}, 'customer')">
+                        Delete
+                    </button>
+                </div>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+/**
+ * Render admins in table
+ */
+function renderAdminsTable() {
+    const tableBody = document.getElementById('adminsTableBody');
+    const emptyState = document.getElementById('adminsEmptyState');
+    
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '';
+    
+    if (adminsData.length === 0) {
+        if (emptyState) emptyState.style.display = 'block';
+        return;
+    }
+    
+    if (emptyState) emptyState.style.display = 'none';
+    
+    adminsData.forEach(admin => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${admin.id}</td>
+            <td>${escapeHtml(admin.name)}</td>
+            <td>${escapeHtml(admin.email)}</td>
+            <td>${escapeHtml(admin.phone)}</td>
+            <td><span class="badge badge-admin">${escapeHtml(admin.role)}</span></td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn btn-sm btn-edit" onclick="openEditUserModal(${admin.id}, 'admin')">
+                        Edit
+                    </button>
+                    <button class="btn btn-sm btn-delete" onclick="openDeleteUserModal(${admin.id}, 'admin')">
+                        Delete
+                    </button>
+                </div>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+/**
+ * Open modal for adding new user (customer or admin)
+ * @param {string} type - Type of user ('customer' or 'admin')
+ */
+function openAddUserModal(type) {
+    userToEdit = null;
+    
+    const modalTitle = document.getElementById('userModalTitle');
+    const saveBtn = document.getElementById('saveUserBtn');
+    const roleGroup = document.getElementById('roleGroup');
+    
+    if (type === 'customer') {
+        if (modalTitle) modalTitle.textContent = 'Add New Customer';
+        if (saveBtn) saveBtn.textContent = 'Save Customer';
+        if (roleGroup) roleGroup.style.display = 'none';
+    } else {
+        if (modalTitle) modalTitle.textContent = 'Add New Administrator';
+        if (saveBtn) saveBtn.textContent = 'Save Administrator';
+        if (roleGroup) roleGroup.style.display = 'block';
+    }
+    
+    document.getElementById('userForm').reset();
+    document.getElementById('userId').value = '';
+    document.getElementById('userType').value = type;
+    
+    showModal('userModal');
+}
+
+/**
+ * Open modal for editing existing user
+ * @param {number} userId - ID of user to edit
+ * @param {string} type - Type of user ('customer' or 'admin')
+ */
+function openEditUserModal(userId, type) {
+    const userData = type === 'customer' 
+        ? customersData.find(u => u.id === userId)
+        : adminsData.find(u => u.id === userId);
+    
+    if (!userData) return;
+    
+    userToEdit = userData;
+    
+    const modalTitle = document.getElementById('userModalTitle');
+    const saveBtn = document.getElementById('saveUserBtn');
+    const roleGroup = document.getElementById('roleGroup');
+    
+    if (type === 'customer') {
+        if (modalTitle) modalTitle.textContent = 'Edit Customer';
+        if (saveBtn) saveBtn.textContent = 'Update Customer';
+        if (roleGroup) roleGroup.style.display = 'none';
+    } else {
+        if (modalTitle) modalTitle.textContent = 'Edit Administrator';
+        if (saveBtn) saveBtn.textContent = 'Update Administrator';
+        if (roleGroup) roleGroup.style.display = 'block';
+    }
+    
+    document.getElementById('userId').value = userData.id;
+    document.getElementById('userType').value = type;
+    document.getElementById('userName').value = userData.name;
+    document.getElementById('userEmail').value = userData.email;
+    document.getElementById('userPhone').value = userData.phone;
+    document.getElementById('userPassword').value = userData.password;
+    
+    if (type === 'admin' && userData.role) {
+        document.getElementById('userRole').value = userData.role;
+    }
+    
+    showModal('userModal');
+}
+
+/**
+ * Handle user form submission (add or edit)
+ */
+function handleUserFormSubmit() {
+    const userId = document.getElementById('userId').value;
+    const userType = document.getElementById('userType').value;
+    const name = document.getElementById('userName').value.trim();
+    const email = document.getElementById('userEmail').value.trim();
+    const phone = document.getElementById('userPhone').value.trim();
+    const password = document.getElementById('userPassword').value;
+    
+    if (!name || !email || !phone || !password) {
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    if (!isValidEmail(email)) {
+        alert('Please enter a valid email address');
+        return;
+    }
+    
+    const userData = { name, email, phone, password };
+    
+    if (userType === 'admin') {
+        userData.role = document.getElementById('userRole').value;
+    } else {
+        userData.joinedDate = new Date().toISOString().split('T')[0];
+    }
+    
+    if (userId) {
+        updateUser(parseInt(userId), userData, userType);
+    } else {
+        addUser(userData, userType);
+    }
+    
+    closeUserModal();
+}
+
+/**
+ * Add new user (customer or admin)
+ * @param {Object} userData - User data
+ * @param {string} type - Type of user ('customer' or 'admin')
+ */
+function addUser(userData, type) {
+    const dataArray = type === 'customer' ? customersData : adminsData;
+    
+    const newId = dataArray.length > 0 
+        ? Math.max(...dataArray.map(u => u.id)) + 1 
+        : 1;
+    
+    const newUser = {
+        id: newId,
+        ...userData
+    };
+    
+    dataArray.push(newUser);
+    
+    if (type === 'customer') {
+        renderCustomersTable();
+    } else {
+        renderAdminsTable();
+    }
+    
+    console.log(`${type} added:`, newUser);
+}
+
+/**
+ * Update existing user
+ * @param {number} userId - ID of user to update
+ * @param {Object} userData - Updated user data
+ * @param {string} type - Type of user ('customer' or 'admin')
+ */
+function updateUser(userId, userData, type) {
+    const dataArray = type === 'customer' ? customersData : adminsData;
+    const index = dataArray.findIndex(u => u.id === userId);
+    
+    if (index === -1) return;
+    
+    dataArray[index] = {
+        id: userId,
+        ...userData
+    };
+    
+    if (type === 'customer') {
+        renderCustomersTable();
+    } else {
+        renderAdminsTable();
+    }
+    
+    console.log(`${type} updated:`, dataArray[index]);
+}
+
+/**
+ * Open delete confirmation modal for user
+ * @param {number} userId - ID of user to delete
+ * @param {string} type - Type of user ('customer' or 'admin')
+ */
+function openDeleteUserModal(userId, type) {
+    const userData = type === 'customer' 
+        ? customersData.find(u => u.id === userId)
+        : adminsData.find(u => u.id === userId);
+    
+    if (!userData) return;
+    
+    userToDelete = userData;
+    deleteItemType = type;
+    
+    const deleteMessage = document.getElementById('deleteMessage');
+    const deleteItemName = document.getElementById('deleteItemName');
+    
+    if (deleteMessage) {
+        deleteMessage.textContent = `Are you sure you want to delete this ${type}?`;
+    }
+    
+    if (deleteItemName) {
+        deleteItemName.textContent = `${userData.name} (${userData.email})`;
+    }
+    
+    showModal('deleteModal');
+}
+
+/**
+ * Confirm and execute deletion
+ */
+function confirmDelete() {
+    // Check if deleting a book
+    if (bookToDelete) {
+        deleteBook(bookToDelete.id);
+        bookToDelete = null;
+    }
+    // Check if deleting a user
+    else if (userToDelete && deleteItemType) {
+        deleteUser(userToDelete.id, deleteItemType);
+        userToDelete = null;
+        deleteItemType = null;
+    }
+    
+    closeDeleteModal();
+}
+
+/**
+ * Delete user from collection
+ * @param {number} userId - ID of user to delete
+ * @param {string} type - Type of user ('customer' or 'admin')
+ */
+function deleteUser(userId, type) {
+    const dataArray = type === 'customer' ? customersData : adminsData;
+    const index = dataArray.findIndex(u => u.id === userId);
+    
+    if (index === -1) return;
+    
+    const deletedUser = dataArray.splice(index, 1)[0];
+    
+    if (type === 'customer') {
+        renderCustomersTable();
+    } else {
+        renderAdminsTable();
+    }
+    
+    console.log(`${type} deleted:`, deletedUser);
+}
+
+/**
+ * Close user add/edit modal
+ */
+function closeUserModal() {
+    hideModal('userModal');
+    document.getElementById('userForm').reset();
+    userToEdit = null;
+}
 
 // ========================================
 // INITIALIZATION
