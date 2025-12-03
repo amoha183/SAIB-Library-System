@@ -109,6 +109,11 @@ let bookToEdit = null;
  */
 let uploadedImageData = null;
 
+/**
+ * Global state for current sort option
+ */
+let currentSortOption = 'default';
+
 // ========================================
 // LOGIN PAGE FUNCTIONS
 // ========================================
@@ -780,9 +785,10 @@ function handleSearch() {
     
     const query = searchInput.value.toLowerCase().trim();
     
-    // If search is empty, show all books
+    // If search is empty, show all books with current sort
     if (!query) {
-        renderBooksGrid();
+        const sortedBooks = sortBooks(booksData, currentSortOption);
+        renderBooksGrid(sortedBooks);
         return;
     }
     
@@ -793,8 +799,84 @@ function handleSearch() {
                book.category.toLowerCase().includes(query);
     });
     
-    // Render filtered books
-    renderBooksGrid(filteredBooks);
+    // Apply current sort to filtered books
+    const sortedFilteredBooks = sortBooks(filteredBooks, currentSortOption);
+    
+    // Render filtered and sorted books
+    renderBooksGrid(sortedFilteredBooks);
+}
+
+/**
+ * Handle sort selection change
+ * Sorts books based on selected option
+ */
+function handleSort() {
+    const sortSelect = document.getElementById('sortSelect');
+    if (!sortSelect) return;
+    
+    currentSortOption = sortSelect.value;
+    
+    // Get current search query if any
+    const searchInput = document.getElementById('searchInput');
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    
+    // Filter books if there's a search query
+    let booksToSort = booksData;
+    if (query) {
+        booksToSort = booksData.filter(book => {
+            return book.title.toLowerCase().includes(query) ||
+                   book.author.toLowerCase().includes(query) ||
+                   book.category.toLowerCase().includes(query);
+        });
+    }
+    
+    // Sort the books
+    const sortedBooks = sortBooks(booksToSort, currentSortOption);
+    
+    // Render sorted books
+    renderBooksGrid(sortedBooks);
+}
+
+/**
+ * Sort books based on selected option
+ * @param {Array} books - Array of books to sort
+ * @param {string} sortOption - Sort option (e.g., 'title-asc', 'year-desc')
+ * @returns {Array} - Sorted array of books
+ */
+function sortBooks(books, sortOption) {
+    // Create a copy to avoid mutating original array
+    const sortedBooks = [...books];
+    
+    switch (sortOption) {
+        case 'title-asc':
+            return sortedBooks.sort((a, b) => a.title.localeCompare(b.title));
+        
+        case 'title-desc':
+            return sortedBooks.sort((a, b) => b.title.localeCompare(a.title));
+        
+        case 'author-asc':
+            return sortedBooks.sort((a, b) => a.author.localeCompare(b.author));
+        
+        case 'author-desc':
+            return sortedBooks.sort((a, b) => b.author.localeCompare(a.author));
+        
+        case 'year-asc':
+            return sortedBooks.sort((a, b) => a.year - b.year);
+        
+        case 'year-desc':
+            return sortedBooks.sort((a, b) => b.year - a.year);
+        
+        case 'category-asc':
+            return sortedBooks.sort((a, b) => a.category.localeCompare(b.category));
+        
+        case 'category-desc':
+            return sortedBooks.sort((a, b) => b.category.localeCompare(a.category));
+        
+        case 'default':
+        default:
+            // Return books in their original order (by ID)
+            return sortedBooks.sort((a, b) => a.id - b.id);
+    }
 }
 
 // ========================================

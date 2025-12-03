@@ -32,19 +32,43 @@
                 </div>
             </div>
 
-            <!-- Search Bar -->
-            <div class="search-container">
-                <input 
-                    type="text" 
-                    id="searchInput" 
-                    class="search-input" 
-                    placeholder="Search books by title, author, or category..."
-                    onkeyup="handleSearch()"
-                >
-                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="m21 21-4.35-4.35"></path>
-                </svg>
+            <!-- Search and Sort Container -->
+            <div class="search-sort-container">
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        class="search-input" 
+                        placeholder="Search books by title, author, or category..."
+                        onkeyup="handleSearch()"
+                    >
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                </div>
+
+                <!-- Sort Dropdown -->
+                <div class="sort-container">
+                    <label for="sortSelect" class="sort-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sort-icon">
+                            <path d="M3 6h18M7 12h10M11 18h2"></path>
+                        </svg>
+                        Sort by:
+                    </label>
+                    <select id="sortSelect" class="sort-select" onchange="handleSort()">
+                        <option value="default">Default</option>
+                        <option value="title-asc">Title (A-Z)</option>
+                        <option value="title-desc">Title (Z-A)</option>
+                        <option value="author-asc">Author (A-Z)</option>
+                        <option value="author-desc">Author (Z-A)</option>
+                        <option value="year-asc">Year (Oldest First)</option>
+                        <option value="year-desc">Year (Newest First)</option>
+                        <option value="category-asc">Category (A-Z)</option>
+                        <option value="category-desc">Category (Z-A)</option>
+                    </select>
+                </div>
             </div>
 
             <!-- Books Grid -->
