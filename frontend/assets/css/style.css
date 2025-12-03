@@ -218,6 +218,52 @@ p {
     color: var(--success-color);
 }
 
+/* Status Badges (for tables) */
+.status-badge {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-available {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-borrowed {
+    background-color: #fff3e0;
+    color: #e65100;
+}
+
+/* Availability Badges (for book cards) */
+.availability-badge {
+    position: absolute;
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: var(--shadow-md);
+    z-index: 10;
+}
+
+.availability-badge.available {
+    background-color: var(--success-color);
+    color: var(--white);
+}
+
+.availability-badge.not-available {
+    background-color: var(--warning-color);
+    color: var(--white);
+}
+
 /* ========================================
    BUTTONS
    ======================================== */
@@ -278,6 +324,21 @@ p {
     color: var(--white);
 }
 
+.btn-success:hover:not(:disabled) {
+    background-color: #388e3c;
+    box-shadow: var(--shadow-md);
+}
+
+.btn-warning {
+    background-color: var(--warning-color);
+    color: var(--white);
+}
+
+.btn-warning:hover:not(:disabled) {
+    background-color: #f57c00;
+    box-shadow: var(--shadow-md);
+}
+
 .btn-block {
     width: 100%;
 }
@@ -304,7 +365,8 @@ p {
 }
 
 .form-input,
-.form-select {
+.form-select,
+.form-textarea {
     width: 100%;
     padding: var(--spacing-md);
     border: 2px solid var(--gray-300);
@@ -315,8 +377,15 @@ p {
     background-color: var(--white);
 }
 
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.6;
+}
+
 .form-input:focus,
-.form-select:focus {
+.form-select:focus,
+.form-textarea:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
@@ -665,6 +734,25 @@ p {
     align-self: flex-start;
 }
 
+.return-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: #fff3e0;
+    border-radius: var(--radius-sm);
+    color: #e65100;
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+}
+
+.return-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
 /* ========================================
    BOOKS TABLE (Admin View)
    ======================================== */
@@ -811,6 +899,10 @@ p {
     max-width: 400px;
 }
 
+.modal-large {
+    max-width: 900px;
+}
+
 @keyframes slideDown {
     from {
         opacity: 0;
@@ -937,6 +1029,145 @@ p {
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
     object-fit: cover;
+}
+
+/* ========================================
+   BORROW INFO DISPLAY
+   ======================================== */
+
+.borrow-info-display {
+    background-color: var(--gray-50);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+}
+
+.borrow-info-display p {
+    margin-bottom: var(--spacing-sm);
+    color: var(--gray-700);
+    font-size: var(--font-size-base);
+}
+
+.borrow-info-display p:last-child {
+    margin-bottom: 0;
+}
+
+.borrow-info-display strong {
+    color: var(--gray-900);
+    font-weight: 600;
+}
+
+/* ========================================
+   BOOK DETAILS MODAL
+   ======================================== */
+
+.book-details-container {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: var(--spacing-2xl);
+}
+
+.book-details-image {
+    position: relative;
+}
+
+.detail-book-cover {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    object-fit: cover;
+}
+
+.book-details-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.detail-title {
+    font-size: var(--font-size-3xl);
+    color: var(--gray-900);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.detail-author {
+    font-size: var(--font-size-lg);
+    color: var(--gray-600);
+    margin: 0;
+    font-style: italic;
+}
+
+.detail-meta-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background-color: var(--gray-50);
+    border-radius: var(--radius-lg);
+}
+
+.detail-meta-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+}
+
+.detail-icon {
+    width: 24px;
+    height: 24px;
+    color: var(--primary-color);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.detail-meta-item > div {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.detail-label {
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    font-size: var(--font-size-base);
+    color: var(--gray-900);
+    font-weight: 500;
+}
+
+.detail-return-info {
+    font-size: var(--font-size-sm);
+    color: var(--warning-color);
+    margin-top: var(--spacing-xs);
+    font-weight: 600;
+}
+
+.detail-description {
+    padding: var(--spacing-lg);
+    background-color: var(--white);
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+}
+
+.detail-description h3 {
+    font-size: var(--font-size-xl);
+    color: var(--gray-900);
+    margin-bottom: var(--spacing-md);
+}
+
+.detail-description p {
+    font-size: var(--font-size-base);
+    color: var(--gray-700);
+    line-height: 1.8;
+    margin: 0;
+    text-align: justify;
 }
 
 /* ========================================
@@ -1139,6 +1370,17 @@ p {
     .modal-content {
         width: 95%;
         margin: var(--spacing-md);
+    }
+    
+    /* Book Details Modal */
+    .book-details-container {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+    
+    .book-details-image {
+        max-width: 250px;
+        margin: 0 auto;
     }
     
     /* Main Content */

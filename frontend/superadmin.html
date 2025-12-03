@@ -79,6 +79,7 @@
                                 <th>Author</th>
                                 <th>Category</th>
                                 <th>Year</th>
+                                <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -221,6 +222,17 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="bookDescription" class="form-label">Description</label>
+                    <textarea 
+                        id="bookDescription" 
+                        class="form-input form-textarea" 
+                        placeholder="Enter book description"
+                        rows="4"
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
                     <label class="form-label">Book Cover Image</label>
                     
                     <div class="image-upload-section">
@@ -341,6 +353,71 @@
                     </button>
                     <button type="submit" class="btn btn-primary" id="saveUserBtn">
                         Save User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Borrow/Return Modal -->
+    <div id="borrowModal" class="modal">
+        <div class="modal-overlay" onclick="closeBorrowModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="borrowModalTitle">Manage Book Borrowing</h2>
+                <button class="modal-close" onclick="closeBorrowModal()">&times;</button>
+            </div>
+            <form id="borrowForm" class="modal-body">
+                <input type="hidden" id="borrowBookId">
+                
+                <div id="borrowFormContent">
+                    <div class="form-group">
+                        <label for="borrowerName" class="form-label">Borrower Name</label>
+                        <input 
+                            type="text" 
+                            id="borrowerName" 
+                            class="form-input" 
+                            placeholder="Enter borrower's name"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="borrowDate" class="form-label">Borrow Date</label>
+                        <input 
+                            type="date" 
+                            id="borrowDate" 
+                            class="form-input"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="returnDate" class="form-label">Expected Return Date</label>
+                        <input 
+                            type="date" 
+                            id="returnDate" 
+                            class="form-input"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div id="returnFormContent" style="display: none;">
+                    <p>Mark this book as returned?</p>
+                    <div class="borrow-info-display">
+                        <p><strong>Borrowed by:</strong> <span id="displayBorrower"></span></p>
+                        <p><strong>Borrow Date:</strong> <span id="displayBorrowDate"></span></p>
+                        <p><strong>Expected Return:</strong> <span id="displayReturnDate"></span></p>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeBorrowModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="saveBorrowBtn">
+                        Save
                     </button>
                 </div>
             </form>

@@ -18,7 +18,12 @@ let booksData = [
         author: "F. Scott Fitzgerald",
         category: "Fiction",
         year: 1925,
-        image: "https://covers.openlibrary.org/b/isbn/9780743273565-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780743273565-L.jpg",
+        description: "The Great Gatsby is a 1925 novel by American writer F. Scott Fitzgerald. Set in the Jazz Age on Long Island, near New York City, the novel depicts first-person narrator Nick Carraway's interactions with mysterious millionaire Jay Gatsby and Gatsby's obsession to reunite with his former lover, Daisy Buchanan.",
+        isAvailable: true,
+        borrowedBy: null,
+        borrowDate: null,
+        returnDate: null
     },
     {
         id: 2,
@@ -26,7 +31,12 @@ let booksData = [
         author: "Harper Lee",
         category: "Fiction",
         year: 1960,
-        image: "https://covers.openlibrary.org/b/isbn/9780061120084-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780061120084-L.jpg",
+        description: "To Kill a Mockingbird is a novel by the American author Harper Lee. It was published in 1960 and was instantly successful. The plot and characters are loosely based on Lee's observations of her family, her neighbors and an event that occurred near her hometown of Monroeville, Alabama, in 1936, when she was ten.",
+        isAvailable: false,
+        borrowedBy: "John Doe",
+        borrowDate: "2024-11-20",
+        returnDate: "2024-12-20"
     },
     {
         id: 3,
@@ -34,7 +44,12 @@ let booksData = [
         author: "George Orwell",
         category: "Fiction",
         year: 1949,
-        image: "https://covers.openlibrary.org/b/isbn/9780451524935-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780451524935-L.jpg",
+        description: "1984 is a dystopian social science fiction novel and cautionary tale by English writer George Orwell. It was published on 8 June 1949 as Orwell's ninth and final book completed in his lifetime. The story takes place in an imagined future, the year 1984, when much of the world has fallen victim to perpetual war, omnipresent government surveillance, historical negationism, and propaganda.",
+        isAvailable: true,
+        borrowedBy: null,
+        borrowDate: null,
+        returnDate: null
     },
     {
         id: 4,
@@ -42,7 +57,12 @@ let booksData = [
         author: "Jane Austen",
         category: "Fiction",
         year: 1813,
-        image: "https://covers.openlibrary.org/b/isbn/9780141439518-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780141439518-L.jpg",
+        description: "Pride and Prejudice is an 1813 novel of manners by Jane Austen. The novel follows the character development of Elizabeth Bennet, the dynamic protagonist who learns about the repercussions of hasty judgments and comes to appreciate the difference between superficial goodness and actual goodness.",
+        isAvailable: false,
+        borrowedBy: "Jane Smith",
+        borrowDate: "2024-11-25",
+        returnDate: "2024-12-15"
     },
     {
         id: 5,
@@ -50,7 +70,12 @@ let booksData = [
         author: "J.D. Salinger",
         category: "Fiction",
         year: 1951,
-        image: "https://covers.openlibrary.org/b/isbn/9780316769488-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780316769488-L.jpg",
+        description: "The Catcher in the Rye is a novel by J. D. Salinger. A controversial novel originally published for adults, it has since become popular with adolescent readers for its themes of teenage angst and alienation. The novel's protagonist Holden Caulfield has become an icon for teenage rebellion.",
+        isAvailable: true,
+        borrowedBy: null,
+        borrowDate: null,
+        returnDate: null
     },
     {
         id: 6,
@@ -58,7 +83,12 @@ let booksData = [
         author: "Yuval Noah Harari",
         category: "History",
         year: 2011,
-        image: "https://covers.openlibrary.org/b/isbn/9780062316097-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780062316097-L.jpg",
+        description: "Sapiens: A Brief History of Humankind is a book by Yuval Noah Harari, first published in Hebrew in Israel in 2011 based on a series of lectures Harari taught at The Hebrew University of Jerusalem. The book surveys the history of humankind from the evolution of archaic human species in the Stone Age up to the twenty-first century.",
+        isAvailable: true,
+        borrowedBy: null,
+        borrowDate: null,
+        returnDate: null
     },
     {
         id: 7,
@@ -66,7 +96,12 @@ let booksData = [
         author: "Tara Westover",
         category: "Biography",
         year: 2018,
-        image: "https://covers.openlibrary.org/b/isbn/9780399590504-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780399590504-L.jpg",
+        description: "Educated is a memoir by the American author Tara Westover. It tells the story of her quest for knowledge, despite growing up in a survivalist family in rural Idaho who were opposed to public education. She taught herself enough mathematics and grammar to be admitted to Brigham Young University, where she studied history, learning for the first time about important world events.",
+        isAvailable: true,
+        borrowedBy: null,
+        borrowDate: null,
+        returnDate: null
     },
     {
         id: 8,
@@ -74,7 +109,12 @@ let booksData = [
         author: "James Clear",
         category: "Self-Help",
         year: 2018,
-        image: "https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg",
+        description: "Atomic Habits is a self-help book by James Clear. The book describes a number of ideas, including the aggregation of marginal gains, which is the idea that if you improve by just 1% each day, you'll end up with results that are nearly 37 times better after one year.",
+        isAvailable: true,
+        borrowedBy: null,
+        borrowDate: null,
+        returnDate: null
     },
     {
         id: 9,
@@ -82,7 +122,12 @@ let booksData = [
         author: "Eric Ries",
         category: "Business",
         year: 2011,
-        image: "https://covers.openlibrary.org/b/isbn/9780307887894-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780307887894-L.jpg",
+        description: "The Lean Startup is a book by Eric Ries describing his proposed lean startup strategy for startup companies. The book consists primarily of interviews with entrepreneurs, managers, and investors who describe their experiences with the lean startup approach.",
+        isAvailable: true,
+        borrowedBy: null,
+        borrowDate: null,
+        returnDate: null
     },
     {
         id: 10,
@@ -90,7 +135,12 @@ let booksData = [
         author: "Stephen Hawking",
         category: "Science",
         year: 1988,
-        image: "https://covers.openlibrary.org/b/isbn/9780553380163-L.jpg"
+        image: "https://covers.openlibrary.org/b/isbn/9780553380163-L.jpg",
+        description: "A Brief History of Time: From the Big Bang to Black Holes is a book on theoretical cosmology by English physicist Stephen Hawking. It became a best-seller and sold more than 25 million copies. The book discusses the history of cosmology and the underlying physics theories on which modern cosmology is based.",
+        isAvailable: true,
+        borrowedBy: null,
+        borrowDate: null,
+        returnDate: null
     }
 ];
 
@@ -103,6 +153,11 @@ let bookToDelete = null;
  * Global state for tracking current book being edited
  */
 let bookToEdit = null;
+
+/**
+ * Global state for tracking current book being borrowed/returned
+ */
+let bookToBorrow = null;
 
 /**
  * Global state for storing uploaded image preview
@@ -340,12 +395,21 @@ function initAdminPage() {
     loadBooks();
     renderBooksTable();
     
-    // Setup form submission handler
+    // Setup book form submission handler
     const bookForm = document.getElementById('bookForm');
     if (bookForm) {
         bookForm.addEventListener('submit', function(e) {
             e.preventDefault();
             handleBookFormSubmit();
+        });
+    }
+    
+    // Setup borrow form submission handler
+    const borrowForm = document.getElementById('borrowForm');
+    if (borrowForm) {
+        borrowForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleBorrowFormSubmit();
         });
     }
 }
@@ -379,7 +443,7 @@ function loadBooks() {
  */
 function renderBooksTable() {
     const tableBody = document.getElementById('booksTableBody');
-    const emptyState = document.getElementById('emptyState');
+    const emptyState = document.getElementById('emptyState') || document.getElementById('booksEmptyState');
     
     if (!tableBody) return;
     
@@ -397,6 +461,10 @@ function renderBooksTable() {
     // Render each book as a table row
     booksData.forEach(book => {
         const row = document.createElement('tr');
+        const statusBadge = book.isAvailable 
+            ? '<span class="status-badge status-available">Available</span>'
+            : '<span class="status-badge status-borrowed">Borrowed</span>';
+        
         row.innerHTML = `
             <td>${book.id}</td>
             <td>
@@ -408,10 +476,14 @@ function renderBooksTable() {
             <td>${escapeHtml(book.author)}</td>
             <td>${escapeHtml(book.category)}</td>
             <td>${book.year}</td>
+            <td>${statusBadge}</td>
             <td>
                 <div class="action-buttons">
                     <button class="btn btn-sm btn-edit" onclick="openEditBookModal(${book.id})">
                         Edit
+                    </button>
+                    <button class="btn btn-sm ${book.isAvailable ? 'btn-warning' : 'btn-success'}" onclick="openBorrowModal(${book.id})">
+                        ${book.isAvailable ? 'Mark Borrowed' : 'Mark Returned'}
                     </button>
                     <button class="btn btn-sm btn-delete" onclick="openDeleteModal(${book.id})">
                         Delete
@@ -479,6 +551,7 @@ function openEditBookModal(bookId) {
     document.getElementById('bookAuthor').value = book.author;
     document.getElementById('bookCategory').value = book.category;
     document.getElementById('bookYear').value = book.year;
+    document.getElementById('bookDescription').value = book.description || '';
     document.getElementById('bookImageUrl').value = book.image || '';
     
     // Show image preview if exists
@@ -502,13 +575,14 @@ function handleBookFormSubmit() {
     const author = document.getElementById('bookAuthor').value.trim();
     const category = document.getElementById('bookCategory').value;
     const year = parseInt(document.getElementById('bookYear').value);
+    const description = document.getElementById('bookDescription').value.trim();
     const imageUrl = document.getElementById('bookImageUrl').value.trim();
     
     // Use uploaded image data or URL input
     const image = uploadedImageData || imageUrl || 'https://via.placeholder.com/300x450?text=No+Cover';
     
     // Validate inputs
-    if (!title || !author || !category || !year) {
+    if (!title || !author || !category || !year || !description) {
         alert('Please fill in all fields');
         return;
     }
@@ -520,10 +594,10 @@ function handleBookFormSubmit() {
     
     if (bookId) {
         // Edit existing book
-        updateBook(parseInt(bookId), { title, author, category, year, image });
+        updateBook(parseInt(bookId), { title, author, category, year, description, image });
     } else {
         // Add new book
-        addBook({ title, author, category, year, image });
+        addBook({ title, author, category, year, description, image });
     }
     
     // Close modal
@@ -532,7 +606,7 @@ function handleBookFormSubmit() {
 
 /**
  * Add new book to the collection
- * @param {Object} bookData - Book data (title, author, category, year)
+ * @param {Object} bookData - Book data (title, author, category, year, description)
  */
 function addBook(bookData) {
     // Generate new ID
@@ -540,10 +614,14 @@ function addBook(bookData) {
         ? Math.max(...booksData.map(b => b.id)) + 1 
         : 1;
     
-    // Create new book object
+    // Create new book object with default availability
     const newBook = {
         id: newId,
-        ...bookData
+        ...bookData,
+        isAvailable: true,
+        borrowedBy: null,
+        borrowDate: null,
+        returnDate: null
     };
     
     // Placeholder for backend API call
@@ -582,10 +660,17 @@ function updateBook(bookId, bookData) {
     const index = booksData.findIndex(b => b.id === bookId);
     if (index === -1) return;
     
+    // Preserve availability data when updating
+    const existingBook = booksData[index];
+    
     // Update book data
     booksData[index] = {
         id: bookId,
-        ...bookData
+        ...bookData,
+        isAvailable: existingBook.isAvailable,
+        borrowedBy: existingBook.borrowedBy,
+        borrowDate: existingBook.borrowDate,
+        returnDate: existingBook.returnDate
     };
     
     // Placeholder for backend API call
@@ -761,6 +846,141 @@ function closeDeleteModal() {
     bookToDelete = null;
 }
 
+/**
+ * Open borrow/return modal
+ * @param {number} bookId - ID of book to borrow/return
+ */
+function openBorrowModal(bookId) {
+    const book = booksData.find(b => b.id === bookId);
+    if (!book) return;
+    
+    bookToBorrow = book;
+    
+    const modalTitle = document.getElementById('borrowModalTitle');
+    const borrowFormContent = document.getElementById('borrowFormContent');
+    const returnFormContent = document.getElementById('returnFormContent');
+    const saveBtn = document.getElementById('saveBorrowBtn');
+    
+    document.getElementById('borrowBookId').value = bookId;
+    
+    if (book.isAvailable) {
+        // Book is available - show borrow form
+        if (modalTitle) modalTitle.textContent = 'Mark Book as Borrowed';
+        if (borrowFormContent) borrowFormContent.style.display = 'block';
+        if (returnFormContent) returnFormContent.style.display = 'none';
+        if (saveBtn) saveBtn.textContent = 'Mark as Borrowed';
+        
+        // Set default dates
+        const today = new Date().toISOString().split('T')[0];
+        const returnDate = new Date();
+        returnDate.setDate(returnDate.getDate() + 30); // 30 days from now
+        
+        document.getElementById('borrowDate').value = today;
+        document.getElementById('returnDate').value = returnDate.toISOString().split('T')[0];
+        document.getElementById('borrowerName').value = '';
+    } else {
+        // Book is borrowed - show return confirmation
+        if (modalTitle) modalTitle.textContent = 'Mark Book as Returned';
+        if (borrowFormContent) borrowFormContent.style.display = 'none';
+        if (returnFormContent) returnFormContent.style.display = 'block';
+        if (saveBtn) saveBtn.textContent = 'Mark as Returned';
+        
+        // Display current borrow info
+        document.getElementById('displayBorrower').textContent = book.borrowedBy || 'N/A';
+        document.getElementById('displayBorrowDate').textContent = formatDate(book.borrowDate);
+        document.getElementById('displayReturnDate').textContent = formatDate(book.returnDate);
+    }
+    
+    showModal('borrowModal');
+}
+
+/**
+ * Handle borrow form submission
+ */
+function handleBorrowFormSubmit() {
+    const bookId = parseInt(document.getElementById('borrowBookId').value);
+    const book = booksData.find(b => b.id === bookId);
+    
+    if (!book) return;
+    
+    if (book.isAvailable) {
+        // Mark as borrowed
+        const borrowerName = document.getElementById('borrowerName').value.trim();
+        const borrowDate = document.getElementById('borrowDate').value;
+        const returnDate = document.getElementById('returnDate').value;
+        
+        if (!borrowerName || !borrowDate || !returnDate) {
+            alert('Please fill in all fields');
+            return;
+        }
+        
+        // Validate dates
+        if (new Date(returnDate) <= new Date(borrowDate)) {
+            alert('Return date must be after borrow date');
+            return;
+        }
+        
+        markBookAsBorrowed(bookId, borrowerName, borrowDate, returnDate);
+    } else {
+        // Mark as returned
+        markBookAsReturned(bookId);
+    }
+    
+    closeBorrowModal();
+}
+
+/**
+ * Mark book as borrowed
+ * @param {number} bookId - ID of book
+ * @param {string} borrowerName - Name of borrower
+ * @param {string} borrowDate - Borrow date
+ * @param {string} returnDate - Expected return date
+ */
+function markBookAsBorrowed(bookId, borrowerName, borrowDate, returnDate) {
+    const index = booksData.findIndex(b => b.id === bookId);
+    if (index === -1) return;
+    
+    booksData[index].isAvailable = false;
+    booksData[index].borrowedBy = borrowerName;
+    booksData[index].borrowDate = borrowDate;
+    booksData[index].returnDate = returnDate;
+    
+    // Re-render tables and grids
+    renderBooksTable();
+    renderBooksGrid();
+    
+    console.log('Book marked as borrowed:', booksData[index]);
+}
+
+/**
+ * Mark book as returned
+ * @param {number} bookId - ID of book
+ */
+function markBookAsReturned(bookId) {
+    const index = booksData.findIndex(b => b.id === bookId);
+    if (index === -1) return;
+    
+    booksData[index].isAvailable = true;
+    booksData[index].borrowedBy = null;
+    booksData[index].borrowDate = null;
+    booksData[index].returnDate = null;
+    
+    // Re-render tables and grids
+    renderBooksTable();
+    renderBooksGrid();
+    
+    console.log('Book marked as returned:', booksData[index]);
+}
+
+/**
+ * Close borrow modal
+ */
+function closeBorrowModal() {
+    hideModal('borrowModal');
+    document.getElementById('borrowForm').reset();
+    bookToBorrow = null;
+}
+
 // ========================================
 // CUSTOMER PAGE FUNCTIONS
 // ========================================
@@ -813,6 +1033,23 @@ function renderBooksGrid(filteredBooks = null) {
 function createBookCard(book) {
     const card = document.createElement('div');
     card.className = 'book-card';
+    card.onclick = () => openBookDetailsModal(book.id);
+    
+    // Determine availability status
+    const availabilityBadge = book.isAvailable 
+        ? '<span class="availability-badge available">Available</span>'
+        : '<span class="availability-badge not-available">Not Available</span>';
+    
+    // Format return date if book is borrowed
+    const returnInfo = !book.isAvailable && book.returnDate
+        ? `<div class="return-info">
+               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="return-icon">
+                   <circle cx="12" cy="12" r="10"></circle>
+                   <polyline points="12 6 12 12 16 14"></polyline>
+               </svg>
+               <span>Expected back: ${formatDate(book.returnDate)}</span>
+           </div>`
+        : '';
     
     card.innerHTML = `
         <div class="book-card-image">
@@ -820,6 +1057,7 @@ function createBookCard(book) {
                  alt="${escapeHtml(book.title)}" 
                  class="book-cover"
                  onerror="this.src='https://via.placeholder.com/300x450?text=No+Cover'">
+            ${availabilityBadge}
         </div>
         <div class="book-card-content">
             <div class="book-card-header">
@@ -832,11 +1070,49 @@ function createBookCard(book) {
                     <span>${book.year}</span>
                 </div>
                 <span class="book-category">${escapeHtml(book.category)}</span>
+                ${returnInfo}
             </div>
         </div>
     `;
     
     return card;
+}
+
+/**
+ * Open book details modal in customer view
+ * @param {number} bookId - ID of book to display
+ */
+function openBookDetailsModal(bookId) {
+    const book = booksData.find(b => b.id === bookId);
+    if (!book) return;
+    
+    // Update modal content
+    document.getElementById('detailBookImage').src = book.image || 'https://via.placeholder.com/300x450?text=No+Cover';
+    document.getElementById('detailBookTitle').textContent = book.title;
+    document.getElementById('detailBookAuthor').textContent = book.author;
+    document.getElementById('detailBookCategory').textContent = book.category;
+    document.getElementById('detailBookYear').textContent = book.year;
+    document.getElementById('detailBookDescription').textContent = book.description || 'No description available.';
+    
+    // Update availability status
+    const statusElement = document.getElementById('detailBookStatus');
+    if (book.isAvailable) {
+        statusElement.innerHTML = '<span class="status-badge status-available">Available</span>';
+    } else {
+        statusElement.innerHTML = `
+            <span class="status-badge status-borrowed">Not Available</span>
+            <p class="detail-return-info">Expected back: ${formatDate(book.returnDate)}</p>
+        `;
+    }
+    
+    showModal('bookDetailsModal');
+}
+
+/**
+ * Close book details modal
+ */
+function closeBookDetailsModal() {
+    hideModal('bookDetailsModal');
 }
 
 /**
@@ -1052,6 +1328,15 @@ function initSuperAdminPage() {
         userForm.addEventListener('submit', function(e) {
             e.preventDefault();
             handleUserFormSubmit();
+        });
+    }
+    
+    // Setup borrow form submission handler
+    const borrowForm = document.getElementById('borrowForm');
+    if (borrowForm) {
+        borrowForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleBorrowFormSubmit();
         });
     }
 }

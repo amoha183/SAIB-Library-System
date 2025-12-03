@@ -84,6 +84,70 @@
     </main>
 
 
+    <!-- Book Details Modal -->
+    <div id="bookDetailsModal" class="modal">
+        <div class="modal-overlay" onclick="closeBookDetailsModal()"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Book Details</h2>
+                <button class="modal-close" onclick="closeBookDetailsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="book-details-container">
+                    <div class="book-details-image">
+                        <img id="detailBookImage" src="" alt="Book Cover" class="detail-book-cover">
+                    </div>
+                    <div class="book-details-info">
+                        <h2 id="detailBookTitle" class="detail-title"></h2>
+                        <p class="detail-author">by <span id="detailBookAuthor"></span></p>
+                        
+                        <div class="detail-meta-group">
+                            <div class="detail-meta-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="detail-icon">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                </svg>
+                                <div>
+                                    <span class="detail-label">Category</span>
+                                    <span id="detailBookCategory" class="detail-value"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="detail-meta-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="detail-icon">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                <div>
+                                    <span class="detail-label">Year</span>
+                                    <span id="detailBookYear" class="detail-value"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="detail-meta-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="detail-icon">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                <div>
+                                    <span class="detail-label">Status</span>
+                                    <div id="detailBookStatus" class="detail-value"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-description">
+                            <h3>Description</h3>
+                            <p id="detailBookDescription"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Include JavaScript -->
     <script src="assets/js/app.js"></script>
     <script>
