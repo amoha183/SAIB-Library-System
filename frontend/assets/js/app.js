@@ -27,6 +27,11 @@ let userToDelete = null;
 let deleteItemType = null;
 let isLoading = false;
 
+// Admin filtered data
+let filteredAdminBooksData = [];
+let filteredCustomersData = [];
+let filteredAdminsData = [];
+
 // ========================================
 // INPUT VALIDATION
 // ========================================
@@ -408,10 +413,14 @@ async function loadBooks() {
 
         if (data.success) {
             booksData = data.data;
+            filteredAdminBooksData = [...booksData]; // Initialize filtered data
             console.log('Books loaded from database:', booksData.length, 'books');
 
             // Fetch next available dates for books with no available copies
             await fetchNextAvailableDates();
+
+            // Populate admin category filter if on admin page
+            populateAdminCategoryFilter();
         } else {
             console.error('Failed to load books:', data.message);
             booksData = [];
@@ -482,14 +491,17 @@ async function loadCustomers() {
         
         if (data.success) {
             customersData = data.data;
+            filteredCustomersData = [...customersData]; // Initialize filtered data
             console.log('Customers loaded from database:', customersData.length);
         } else {
             console.error('Failed to load customers:', data.message);
             customersData = [];
+            filteredCustomersData = [];
         }
     } catch (error) {
         console.error('Error loading customers:', error);
         customersData = [];
+        filteredCustomersData = [];
     }
 }
 
@@ -523,17 +535,20 @@ async function loadAdmins() {
         
         if (data.success) {
             adminsData = data.data || [];
+            filteredAdminsData = [...adminsData]; // Initialize filtered data
             adminsLoadError = null;
             console.log('Admins loaded from database:', adminsData.length, adminsData);
         } else {
             console.error('Failed to load admins:', data.message);
             adminsLoadError = data.message || 'Failed to load administrators.';
             adminsData = [];
+            filteredAdminsData = [];
         }
     } catch (error) {
         console.error('Error loading admins:', error);
         adminsLoadError = 'Network error loading administrators.';
         adminsData = [];
+        filteredAdminsData = [];
     }
 }
 
@@ -713,24 +728,29 @@ function populateFormDropdowns() {
 function renderBooksTable() {
     const tableBody = document.getElementById('booksTableBody');
     const emptyState = document.getElementById('emptyState') || document.getElementById('booksEmptyState');
-    
+
     if (!tableBody) return;
-    
+
     tableBody.innerHTML = '';
-    
-    if (booksData.length === 0) {
+
+    // Use filtered data if available, otherwise use all books
+    const dataToRender = filteredAdminBooksData.length > 0 || document.getElementById('adminBookSearch')?.value
+        ? filteredAdminBooksData
+        : booksData;
+
+    if (dataToRender.length === 0) {
         if (emptyState) emptyState.style.display = 'block';
         return;
     }
-    
+
     if (emptyState) emptyState.style.display = 'none';
-    
-    booksData.forEach(book => {
+
+    dataToRender.forEach(book => {
         const row = document.createElement('tr');
-        const statusBadge = book.isAvailable 
+        const statusBadge = book.isAvailable
             ? '<span class="status-badge status-available">Available</span>'
             : '<span class="status-badge status-borrowed">Borrowed</span>';
-        
+
         row.innerHTML = `
             <td>${book.id}</td>
             <td>
@@ -758,6 +778,118 @@ function renderBooksTable() {
             </td>
         `;
         tableBody.appendChild(row);
+    });
+}
+
+/**
+ * Filter and sort admin books table
+ */
+function filterAdminBooks() {
+    const searchTerm = document.getElementById('adminBookSearch')?.value.toLowerCase() || '';
+    const sortOption = document.getElementById('adminBookSort')?.value || 'default';
+    const categoryFilter = document.getElementById('adminCategoryFilter')?.value || '';
+    const availabilityFilter = document.getElementById('adminAvailabilityFilter')?.value || '';
+
+    // Start with all books
+    let filtered = [...booksData];
+
+    // Apply search filter
+    if (searchTerm) {
+        filtered = filtered.filter(book => {
+            const title = (book.title || '').toLowerCase();
+            const author = (book.author || '').toLowerCase();
+            const isbn = (book.isbn || '').toLowerCase();
+            const category = (book.category || '').toLowerCase();
+            return title.includes(searchTerm) ||
+                   author.includes(searchTerm) ||
+                   isbn.includes(searchTerm) ||
+                   category.includes(searchTerm);
+        });
+    }
+
+    // Apply category filter
+    if (categoryFilter) {
+        filtered = filtered.filter(book => {
+            const bookCategory = (book.category || '').toLowerCase();
+            return bookCategory === categoryFilter.toLowerCase();
+        });
+    }
+
+    // Apply availability filter
+    if (availabilityFilter) {
+        filtered = filtered.filter(book => {
+            if (availabilityFilter === 'available') {
+                return book.isAvailable === true || book.available_copies > 0;
+            } else if (availabilityFilter === 'borrowed') {
+                return book.isAvailable === false || book.available_copies === 0;
+            }
+            return true;
+        });
+    }
+
+    // Apply sorting
+    if (sortOption !== 'default') {
+        filtered.sort((a, b) => {
+            switch (sortOption) {
+                case 'title-asc':
+                    return (a.title || '').localeCompare(b.title || '');
+                case 'title-desc':
+                    return (b.title || '').localeCompare(a.title || '');
+                case 'author-asc':
+                    return (a.author || '').localeCompare(b.author || '');
+                case 'author-desc':
+                    return (b.author || '').localeCompare(a.author || '');
+                case 'year-asc':
+                    return (a.year || 0) - (b.year || 0);
+                case 'year-desc':
+                    return (b.year || 0) - (a.year || 0);
+                default:
+                    return 0;
+            }
+        });
+    }
+
+    filteredAdminBooksData = filtered;
+    renderBooksTable();
+}
+
+/**
+ * Clear all admin book filters
+ */
+function clearAdminBookFilters() {
+    const searchInput = document.getElementById('adminBookSearch');
+    const sortSelect = document.getElementById('adminBookSort');
+    const categorySelect = document.getElementById('adminCategoryFilter');
+    const availabilitySelect = document.getElementById('adminAvailabilityFilter');
+
+    if (searchInput) searchInput.value = '';
+    if (sortSelect) sortSelect.value = 'default';
+    if (categorySelect) categorySelect.value = '';
+    if (availabilitySelect) availabilitySelect.value = '';
+
+    filteredAdminBooksData = [...booksData];
+    renderBooksTable();
+}
+
+/**
+ * Populate admin category filter dropdown
+ */
+function populateAdminCategoryFilter() {
+    const categorySelect = document.getElementById('adminCategoryFilter');
+    if (!categorySelect) return;
+
+    // Get unique categories from books
+    const categories = [...new Set(booksData.map(book => book.category).filter(Boolean))];
+    categories.sort();
+
+    // Keep the first "All Categories" option
+    categorySelect.innerHTML = '<option value="">All Categories</option>';
+
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        categorySelect.appendChild(option);
     });
 }
 
@@ -2208,8 +2340,8 @@ async function loadBorrowings() {
 
         if (data.success) {
             borrowingsData = data.data || [];
-            filteredBorrowingsData = [...borrowingsData];
-            renderBorrowingsTable();
+            // Apply current filter (default excludes returned books)
+            filterBorrowings();
             updateBorrowingsStats();
         } else {
             console.error('Failed to load borrowings:', data.message);
@@ -2234,20 +2366,84 @@ function refreshBorrowings() {
 
 /**
  * Filter borrowings by status
+ * By default (All Status), shows only active borrowings (excludes returned)
  */
 function filterBorrowings() {
     const statusFilter = document.getElementById('borrowingsStatusFilter')?.value || '';
+    const searchTerm = document.getElementById('borrowingsSearch')?.value.toLowerCase() || '';
+    const sortOption = document.getElementById('borrowingsSort')?.value || 'default';
 
-    if (!statusFilter) {
-        filteredBorrowingsData = [...borrowingsData];
+    // Start with all borrowings
+    let filtered = [...borrowingsData];
+
+    // Apply status filter
+    if (statusFilter === 'all') {
+        // Show all borrowings
+    } else if (!statusFilter) {
+        // Default: show only active borrowings (Borrowed and Overdue), exclude Returned
+        filtered = filtered.filter(borrowing => {
+            const status = getBorrowingStatus(borrowing);
+            return status !== 'Returned';
+        });
     } else {
-        filteredBorrowingsData = borrowingsData.filter(borrowing => {
+        filtered = filtered.filter(borrowing => {
             const status = getBorrowingStatus(borrowing);
             return status === statusFilter;
         });
     }
 
+    // Apply search filter
+    if (searchTerm) {
+        filtered = filtered.filter(borrowing => {
+            const bookTitle = (borrowing.book_title || borrowing.bookTitle || '').toLowerCase();
+            const customerName = (borrowing.customer_name || borrowing.customerName || '').toLowerCase();
+            return bookTitle.includes(searchTerm) || customerName.includes(searchTerm);
+        });
+    }
+
+    // Apply sorting
+    if (sortOption !== 'default') {
+        filtered.sort((a, b) => {
+            switch (sortOption) {
+                case 'borrow-asc':
+                    return new Date(a.borrow_date || a.borrowDate) - new Date(b.borrow_date || b.borrowDate);
+                case 'borrow-desc':
+                    return new Date(b.borrow_date || b.borrowDate) - new Date(a.borrow_date || a.borrowDate);
+                case 'due-asc':
+                    return new Date(a.due_date || a.dueDate) - new Date(b.due_date || b.dueDate);
+                case 'due-desc':
+                    return new Date(b.due_date || b.dueDate) - new Date(a.due_date || a.dueDate);
+                case 'book-asc':
+                    return (a.book_title || a.bookTitle || '').localeCompare(b.book_title || b.bookTitle || '');
+                case 'book-desc':
+                    return (b.book_title || b.bookTitle || '').localeCompare(a.book_title || a.bookTitle || '');
+                case 'customer-asc':
+                    return (a.customer_name || a.customerName || '').localeCompare(b.customer_name || b.customerName || '');
+                case 'customer-desc':
+                    return (b.customer_name || b.customerName || '').localeCompare(a.customer_name || a.customerName || '');
+                default:
+                    return 0;
+            }
+        });
+    }
+
+    filteredBorrowingsData = filtered;
     renderBorrowingsTable();
+}
+
+/**
+ * Clear all borrowing filters
+ */
+function clearBorrowingFilters() {
+    const searchInput = document.getElementById('borrowingsSearch');
+    const sortSelect = document.getElementById('borrowingsSort');
+    const statusSelect = document.getElementById('borrowingsStatusFilter');
+
+    if (searchInput) searchInput.value = '';
+    if (sortSelect) sortSelect.value = 'default';
+    if (statusSelect) statusSelect.value = '';
+
+    filterBorrowings();
 }
 
 /**
@@ -2559,19 +2755,24 @@ async function returnFromDetailsModal() {
 function renderCustomersTable() {
     const tableBody = document.getElementById('customersTableBody');
     const emptyState = document.getElementById('customersEmptyState');
-    
+
     if (!tableBody) return;
-    
+
     tableBody.innerHTML = '';
-    
-    if (customersData.length === 0) {
+
+    // Use filtered data if available, otherwise use all customers
+    const dataToRender = filteredCustomersData.length > 0 || document.getElementById('adminCustomerSearch')?.value
+        ? filteredCustomersData
+        : customersData;
+
+    if (dataToRender.length === 0) {
         if (emptyState) emptyState.style.display = 'block';
         return;
     }
-    
+
     if (emptyState) emptyState.style.display = 'none';
-    
-    customersData.forEach(customer => {
+
+    dataToRender.forEach(customer => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${customer.id}</td>
@@ -2595,17 +2796,84 @@ function renderCustomersTable() {
 }
 
 /**
+ * Filter and sort admin customers table
+ */
+function filterAdminCustomers() {
+    const searchTerm = document.getElementById('adminCustomerSearch')?.value.toLowerCase() || '';
+    const sortOption = document.getElementById('adminCustomerSort')?.value || 'default';
+
+    // Start with all customers
+    let filtered = [...customersData];
+
+    // Apply search filter
+    if (searchTerm) {
+        filtered = filtered.filter(customer => {
+            const name = (customer.name || '').toLowerCase();
+            const email = (customer.email || '').toLowerCase();
+            const phone = (customer.phone || '').toLowerCase();
+            return name.includes(searchTerm) ||
+                   email.includes(searchTerm) ||
+                   phone.includes(searchTerm);
+        });
+    }
+
+    // Apply sorting
+    if (sortOption !== 'default') {
+        filtered.sort((a, b) => {
+            switch (sortOption) {
+                case 'name-asc':
+                    return (a.name || '').localeCompare(b.name || '');
+                case 'name-desc':
+                    return (b.name || '').localeCompare(a.name || '');
+                case 'email-asc':
+                    return (a.email || '').localeCompare(b.email || '');
+                case 'email-desc':
+                    return (b.email || '').localeCompare(a.email || '');
+                case 'date-asc':
+                    return new Date(a.joinedDate || 0) - new Date(b.joinedDate || 0);
+                case 'date-desc':
+                    return new Date(b.joinedDate || 0) - new Date(a.joinedDate || 0);
+                default:
+                    return 0;
+            }
+        });
+    }
+
+    filteredCustomersData = filtered;
+    renderCustomersTable();
+}
+
+/**
+ * Clear all admin customer filters
+ */
+function clearAdminCustomerFilters() {
+    const searchInput = document.getElementById('adminCustomerSearch');
+    const sortSelect = document.getElementById('adminCustomerSort');
+
+    if (searchInput) searchInput.value = '';
+    if (sortSelect) sortSelect.value = 'default';
+
+    filteredCustomersData = [...customersData];
+    renderCustomersTable();
+}
+
+/**
  * Render admins table
  */
 function renderAdminsTable() {
     const tableBody = document.getElementById('adminsTableBody');
     const emptyState = document.getElementById('adminsEmptyState');
-    
+
     if (!tableBody) return;
-    
+
     tableBody.innerHTML = '';
-    
-    if (adminsData.length === 0) {
+
+    // Use filtered data if available, otherwise use all admins
+    const dataToRender = filteredAdminsData.length > 0 || document.getElementById('adminAdminSearch')?.value
+        ? filteredAdminsData
+        : adminsData;
+
+    if (dataToRender.length === 0 && adminsData.length === 0) {
         if (emptyState) {
             emptyState.style.display = 'block';
             // Show error message if there was an issue loading
@@ -2630,10 +2898,24 @@ function renderAdminsTable() {
         }
         return;
     }
-    
+
+    if (dataToRender.length === 0) {
+        if (emptyState) {
+            emptyState.style.display = 'block';
+            emptyState.innerHTML = `
+                <div class="empty-state-content">
+                    <i class="empty-icon">🔍</i>
+                    <h3>No results found</h3>
+                    <p>Try adjusting your search or filters.</p>
+                </div>
+            `;
+        }
+        return;
+    }
+
     if (emptyState) emptyState.style.display = 'none';
-    
-    adminsData.forEach(admin => {
+
+    dataToRender.forEach(admin => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${admin.id}</td>
@@ -2654,6 +2936,75 @@ function renderAdminsTable() {
         `;
         tableBody.appendChild(row);
     });
+}
+
+/**
+ * Filter and sort admin admins table
+ */
+function filterAdminAdmins() {
+    const searchTerm = document.getElementById('adminAdminSearch')?.value.toLowerCase() || '';
+    const sortOption = document.getElementById('adminAdminSort')?.value || 'default';
+    const roleFilter = document.getElementById('adminRoleFilter')?.value || '';
+
+    // Start with all admins
+    let filtered = [...adminsData];
+
+    // Apply search filter
+    if (searchTerm) {
+        filtered = filtered.filter(admin => {
+            const name = (admin.name || '').toLowerCase();
+            const email = (admin.email || '').toLowerCase();
+            const phone = (admin.phone || '').toLowerCase();
+            return name.includes(searchTerm) ||
+                   email.includes(searchTerm) ||
+                   phone.includes(searchTerm);
+        });
+    }
+
+    // Apply role filter
+    if (roleFilter) {
+        filtered = filtered.filter(admin => {
+            const adminRole = (admin.role || '').toLowerCase();
+            return adminRole === roleFilter.toLowerCase();
+        });
+    }
+
+    // Apply sorting
+    if (sortOption !== 'default') {
+        filtered.sort((a, b) => {
+            switch (sortOption) {
+                case 'name-asc':
+                    return (a.name || '').localeCompare(b.name || '');
+                case 'name-desc':
+                    return (b.name || '').localeCompare(a.name || '');
+                case 'email-asc':
+                    return (a.email || '').localeCompare(b.email || '');
+                case 'email-desc':
+                    return (b.email || '').localeCompare(a.email || '');
+                default:
+                    return 0;
+            }
+        });
+    }
+
+    filteredAdminsData = filtered;
+    renderAdminsTable();
+}
+
+/**
+ * Clear all admin admin filters
+ */
+function clearAdminAdminFilters() {
+    const searchInput = document.getElementById('adminAdminSearch');
+    const sortSelect = document.getElementById('adminAdminSort');
+    const roleSelect = document.getElementById('adminRoleFilter');
+
+    if (searchInput) searchInput.value = '';
+    if (sortSelect) sortSelect.value = 'default';
+    if (roleSelect) roleSelect.value = '';
+
+    filteredAdminsData = [...adminsData];
+    renderAdminsTable();
 }
 
 /**

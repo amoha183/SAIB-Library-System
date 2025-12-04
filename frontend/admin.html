@@ -63,6 +63,65 @@
                     </button>
                 </div>
 
+                <!-- Search and Filter Section for Books -->
+                <div class="admin-filters-container">
+                    <div class="admin-search-row">
+                        <!-- Search Bar -->
+                        <div class="admin-search-box">
+                            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                            <input type="text" id="adminBookSearch" class="admin-search-input" placeholder="Search by title, author, ISBN..." onkeyup="filterAdminBooks()">
+                        </div>
+
+                        <!-- Sort Dropdown -->
+                        <div class="admin-sort-box">
+                            <label for="adminBookSort" class="sort-label">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sort-icon">
+                                    <path d="M3 6h18M7 12h10M11 18h2"></path>
+                                </svg>
+                                Sort:
+                            </label>
+                            <select id="adminBookSort" class="filter-select" onchange="filterAdminBooks()">
+                                <option value="default">Default</option>
+                                <option value="title-asc">Title (A-Z)</option>
+                                <option value="title-desc">Title (Z-A)</option>
+                                <option value="author-asc">Author (A-Z)</option>
+                                <option value="author-desc">Author (Z-A)</option>
+                                <option value="year-asc">Year (Oldest)</option>
+                                <option value="year-desc">Year (Newest)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="admin-filter-row">
+                        <!-- Category Filter -->
+                        <div class="admin-filter-group">
+                            <label for="adminCategoryFilter" class="filter-label">Category</label>
+                            <select id="adminCategoryFilter" class="filter-select" onchange="filterAdminBooks()">
+                                <option value="">All Categories</option>
+                                <!-- Options populated dynamically -->
+                            </select>
+                        </div>
+
+                        <!-- Availability Filter -->
+                        <div class="admin-filter-group">
+                            <label for="adminAvailabilityFilter" class="filter-label">Availability</label>
+                            <select id="adminAvailabilityFilter" class="filter-select" onchange="filterAdminBooks()">
+                                <option value="">All Books</option>
+                                <option value="available">Available</option>
+                                <option value="borrowed">All Borrowed</option>
+                            </select>
+                        </div>
+
+                        <!-- Clear Filters Button -->
+                        <button type="button" class="btn btn-secondary btn-clear-filters" onclick="clearAdminBookFilters()">
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
+
                 <div class="table-container">
                     <table class="books-table" id="booksTable">
                         <thead>
@@ -91,20 +150,66 @@
             <div id="borrowingsTab" class="tab-content">
                 <div class="tab-header">
                     <h2>Borrowings Management</h2>
-                    <div class="borrowings-filters">
-                        <select id="borrowingsStatusFilter" class="filter-select" onchange="filterBorrowings()">
-                            <option value="">All Status</option>
-                            <option value="Borrowed">Currently Borrowed</option>
-                            <option value="Returned">Returned</option>
-                            <option value="Overdue">Overdue</option>
-                        </select>
-                        <button class="btn btn-secondary" onclick="refreshBorrowings()">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon-svg">
-                                <polyline points="23 4 23 10 17 10"></polyline>
-                                <polyline points="1 20 1 14 7 14"></polyline>
-                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    <button class="btn btn-secondary" onclick="refreshBorrowings()">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon-svg">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
+
+                <!-- Search and Filter Section for Borrowings -->
+                <div class="admin-filters-container">
+                    <div class="admin-search-row">
+                        <!-- Search Bar -->
+                        <div class="admin-search-box">
+                            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
                             </svg>
-                            Refresh
+                            <input type="text" id="borrowingsSearch" class="admin-search-input" placeholder="Search by book title, customer name..." onkeyup="filterBorrowings()">
+                        </div>
+
+                        <!-- Sort Dropdown -->
+                        <div class="admin-sort-box">
+                            <label for="borrowingsSort" class="sort-label">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sort-icon">
+                                    <path d="M3 6h18M7 12h10M11 18h2"></path>
+                                </svg>
+                                Sort:
+                            </label>
+                            <select id="borrowingsSort" class="filter-select" onchange="filterBorrowings()">
+                                <option value="default">Default</option>
+                                <option value="borrow-asc">Borrow Date (Oldest)</option>
+                                <option value="borrow-desc">Borrow Date (Newest)</option>
+                                <option value="due-asc">Due Date (Earliest)</option>
+                                <option value="due-desc">Due Date (Latest)</option>
+                                <option value="book-asc">Book Title (A-Z)</option>
+                                <option value="book-desc">Book Title (Z-A)</option>
+                                <option value="customer-asc">Customer (A-Z)</option>
+                                <option value="customer-desc">Customer (Z-A)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="admin-filter-row">
+                        <!-- Status Filter -->
+                        <div class="admin-filter-group">
+                            <label for="borrowingsStatusFilter" class="filter-label">Status</label>
+                            <select id="borrowingsStatusFilter" class="filter-select" onchange="filterBorrowings()">
+                                <option value="">Active Borrowings</option>
+                                <option value="Borrowed">Currently Borrowed</option>
+                                <option value="Overdue">Overdue</option>
+                                <option value="Returned">Returned (History)</option>
+                                <option value="all">All Borrowings</option>
+                            </select>
+                        </div>
+
+                        <!-- Clear Filters Button -->
+                        <button type="button" class="btn btn-secondary btn-clear-filters" onclick="clearBorrowingFilters()">
+                            Clear Filters
                         </button>
                     </div>
                 </div>
