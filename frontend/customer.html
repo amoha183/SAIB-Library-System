@@ -16,6 +16,8 @@
             </div>
             <ul class="navbar-menu">
                 <li><a href="customer.html" class="nav-link active">Browse Books</a></li>
+                <li id="superAdminLink" style="display: none;"><a href="superadmin.html" class="nav-link">Super Admin Dashboard</a></li>
+                <li id="adminLink" style="display: none;"><a href="admin.html" class="nav-link">Admin Dashboard</a></li>
                 <li><a href="index.html" class="nav-link" onclick="handleLogout()">Logout</a></li>
             </ul>
         </div>
@@ -24,22 +26,44 @@
     <!-- Main Content -->
     <main class="main-content">
         <div class="container">
-            <!-- Page Header with Search -->
-            <div class="page-header">
-                <div class="header-content">
-                    <h1 class="page-title">Browse Our Collection</h1>
-                    <p class="page-subtitle">Discover your next favorite book</p>
-                </div>
+            <!-- Customer Tabs Navigation -->
+            <div class="customer-tabs-container">
+                <button class="customer-tab-button active" onclick="switchCustomerTab('browse')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                    Browse Books
+                </button>
+                <button class="customer-tab-button" onclick="switchCustomerTab('myBorrowings')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    My Borrowings
+                </button>
             </div>
 
-            <!-- Search and Sort Container -->
+            <!-- Browse Books Tab Content -->
+            <div id="browseTab" class="customer-tab-content active">
+                <!-- Page Header with Search -->
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1 class="page-title">Browse Our Collection</h1>
+                        <p class="page-subtitle">Discover your next favorite book</p>
+                    </div>
+                </div>
+
+                <!-- Search and Sort Container -->
             <div class="search-sort-container">
                 <!-- Search Bar -->
                 <div class="search-container">
-                    <input 
-                        type="text" 
-                        id="searchInput" 
-                        class="search-input" 
+                    <input
+                        type="text"
+                        id="searchInput"
+                        class="search-input"
                         placeholder="Search books by title, author, or category..."
                         onkeyup="handleSearch()"
                     >
@@ -71,14 +95,144 @@
                 </div>
             </div>
 
-            <!-- Books Grid -->
-            <div class="books-grid" id="booksGrid">
-                <!-- Book cards will be dynamically rendered here -->
+            <!-- Filter Section -->
+            <div class="filters-container">
+                <div class="filters-header">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="filter-icon">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                    <span>Filters:</span>
+                </div>
+                <div class="filters-row">
+                    <!-- Author Filter -->
+                    <div class="filter-group">
+                        <label for="filterAuthor" class="filter-label">Author</label>
+                        <select id="filterAuthor" class="filter-select" onchange="applyFilters()">
+                            <option value="">All Authors</option>
+                            <!-- Options populated dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Genre Filter -->
+                    <div class="filter-group">
+                        <label for="filterGenre" class="filter-label">Genre</label>
+                        <select id="filterGenre" class="filter-select" onchange="applyFilters()">
+                            <option value="">All Genres</option>
+                            <!-- Options populated dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Year Filter -->
+                    <div class="filter-group">
+                        <label for="filterYear" class="filter-label">Year</label>
+                        <select id="filterYear" class="filter-select" onchange="applyFilters()">
+                            <option value="">All Years</option>
+                            <!-- Options populated dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Availability Filter -->
+                    <div class="filter-group">
+                        <label for="filterAvailability" class="filter-label">Availability</label>
+                        <select id="filterAvailability" class="filter-select" onchange="applyFilters()">
+                            <option value="">All Books</option>
+                            <option value="available">Available</option>
+                            <option value="borrowed">Borrowed</option>
+                        </select>
+                    </div>
+
+                    <!-- Clear Filters Button -->
+                    <button type="button" class="btn btn-secondary btn-clear-filters" onclick="clearFilters()">
+                        Clear Filters
+                    </button>
+                </div>
             </div>
 
-            <!-- Empty State -->
-            <div id="emptyState" class="empty-state" style="display: none;">
-                <p>No books found matching your search.</p>
+                <!-- Books Grid -->
+                <div class="books-grid" id="booksGrid">
+                    <!-- Book cards will be dynamically rendered here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <p>No books found matching your search.</p>
+                </div>
+            </div>
+
+            <!-- My Borrowings Tab Content -->
+            <div id="myBorrowingsTab" class="customer-tab-content">
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1 class="page-title">My Borrowings</h1>
+                        <p class="page-subtitle">Track your borrowed books and return dates</p>
+                    </div>
+                </div>
+
+                <!-- Borrowings Summary Cards -->
+                <div class="customer-borrowings-stats">
+                    <div class="borrowing-stat-card">
+                        <div class="stat-icon currently-borrowed">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="myCurrentlyBorrowedCount">0</span>
+                            <span class="stat-label">Currently Borrowed</span>
+                        </div>
+                    </div>
+                    <div class="borrowing-stat-card">
+                        <div class="stat-icon overdue-books">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="myOverdueCount">0</span>
+                            <span class="stat-label">Overdue</span>
+                        </div>
+                    </div>
+                    <div class="borrowing-stat-card">
+                        <div class="stat-icon returned-books">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="myReturnedCount">0</span>
+                            <span class="stat-label">Returned</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter for My Borrowings -->
+                <div class="my-borrowings-filter">
+                    <label for="myBorrowingsFilter">Filter:</label>
+                    <select id="myBorrowingsFilter" class="filter-select" onchange="filterMyBorrowings()">
+                        <option value="">All Borrowings</option>
+                        <option value="Borrowed">Currently Borrowed</option>
+                        <option value="Overdue">Overdue</option>
+                        <option value="Returned">Returned</option>
+                    </select>
+                </div>
+
+                <!-- Borrowings List -->
+                <div class="my-borrowings-list" id="myBorrowingsList">
+                    <!-- Borrowing cards will be rendered here -->
+                </div>
+
+                <!-- Empty State for Borrowings -->
+                <div id="myBorrowingsEmptyState" class="empty-state" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="empty-icon">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                    <p>You haven't borrowed any books yet.</p>
+                    <button class="btn btn-primary" onclick="switchCustomerTab('browse')">Browse Books</button>
+                </div>
             </div>
         </div>
     </main>
@@ -153,6 +307,17 @@
     <script>
         // Initialize customer page
         initCustomerPage();
+
+        // Check user type and show appropriate admin link
+        document.addEventListener('DOMContentLoaded', function() {
+            const userType = sessionStorage.getItem('userType');
+
+            if (userType === 'superadmin') {
+                document.getElementById('superAdminLink').style.display = 'block';
+            } else if (userType === 'admin') {
+                document.getElementById('adminLink').style.display = 'block';
+            }
+        });
     </script>
 </body>
 </html>

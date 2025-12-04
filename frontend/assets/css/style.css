@@ -356,6 +356,38 @@ p {
     margin-bottom: var(--spacing-lg);
 }
 
+/* Two-column form row */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+}
+
+.form-row .form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+@media (max-width: 576px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Required field indicator */
+.required {
+    color: var(--danger-color, #dc3545);
+    font-weight: bold;
+}
+
+/* Form hint text */
+.form-hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.85rem;
+    color: var(--gray-color, #6c757d);
+    font-style: italic;
+}
+
 .form-label {
     display: block;
     margin-bottom: var(--spacing-sm);
@@ -412,6 +444,31 @@ p {
 }
 
 .error-message-general.show {
+    display: block;
+}
+
+/* Input Validation Styles */
+.input-error {
+    border-color: var(--danger-color) !important;
+    background-color: #fff5f5;
+}
+
+.input-error:focus {
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2) !important;
+}
+
+.input-success {
+    border-color: var(--success-color) !important;
+}
+
+.input-success:focus {
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2) !important;
+}
+
+.field-error {
+    color: var(--danger-color);
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
     display: block;
 }
 
@@ -619,6 +676,96 @@ p {
 
 .sort-select:focus {
     outline: none;
+}
+
+/* Filter Section */
+.filters-container {
+    background-color: var(--gray-100);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md) var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+    border: 1px solid var(--gray-200);
+}
+
+.filters-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: var(--spacing-md);
+    font-size: var(--font-size-sm);
+}
+
+.filter-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--primary-color);
+}
+
+.filters-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    min-width: 150px;
+    flex: 1;
+    max-width: 200px;
+}
+
+.filter-label {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--gray-600);
+}
+
+.filter-select {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family);
+    background-color: var(--white);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+.filter-select:hover {
+    border-color: var(--primary-color);
+}
+
+.btn-clear-filters {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+    height: fit-content;
+}
+
+@media (max-width: 768px) {
+    .filters-row {
+        flex-direction: column;
+    }
+
+    .filter-group {
+        width: 100%;
+        max-width: none;
+    }
+
+    .btn-clear-filters {
+        width: 100%;
+    }
 }
 
 /* ========================================
@@ -1441,5 +1588,920 @@ p {
 
 .loading {
     animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ========================================
+   BORROWING MODAL STYLES
+   ======================================== */
+
+/* Availability Info Box */
+.availability-info-box {
+    background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.availability-header {
+    margin-bottom: var(--spacing-sm);
+}
+
+.book-title-display {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--gray-800);
+}
+
+.availability-details {
+    display: flex;
+    gap: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+.availability-stat {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.availability-stat .stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+}
+
+.availability-stat .stat-value {
+    font-weight: 600;
+    font-size: var(--font-size-base);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+}
+
+.availability-stat .stat-value.available {
+    background-color: rgba(76, 175, 80, 0.15);
+    color: var(--success-color);
+}
+
+.availability-stat .stat-value.borrowed {
+    background-color: rgba(255, 152, 0, 0.15);
+    color: var(--warning-color);
+}
+
+.availability-stat .stat-value.none-available {
+    background-color: rgba(244, 67, 54, 0.15);
+    color: var(--danger-color);
+}
+
+/* Next Available Info */
+.next-available-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: rgba(33, 150, 243, 0.1);
+    border-radius: var(--radius-md);
+    color: var(--info-color);
+    font-size: var(--font-size-sm);
+}
+
+.next-available-info .info-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+/* No Copies Warning */
+.no-copies-warning {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background-color: rgba(244, 67, 54, 0.1);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    border-radius: var(--radius-md);
+    color: var(--danger-color);
+    margin-bottom: var(--spacing-md);
+}
+
+.no-copies-warning .warning-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+/* Overdue Warning */
+.overdue-warning {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: rgba(244, 67, 54, 0.1);
+    border-radius: var(--radius-md);
+    color: var(--danger-color);
+    margin-top: var(--spacing-sm);
+}
+
+.overdue-warning .warning-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+/* Return Confirm Text */
+.return-confirm-text {
+    font-size: var(--font-size-lg);
+    font-weight: 500;
+    margin-bottom: var(--spacing-md);
+    color: var(--gray-800);
+}
+
+/* Borrow Info Display */
+.borrow-info-display {
+    background-color: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+}
+
+.borrow-info-display p {
+    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+}
+
+.borrow-info-display p:last-child {
+    margin-bottom: 0;
+}
+
+.borrow-info-display strong {
+    color: var(--gray-700);
+}
+
+/* Duration Selection */
+#customDurationGroup {
+    transition: all var(--transition-fast);
+}
+
+/* Book card availability badge improvements */
+.availability-badge {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.availability-badge.available {
+    background-color: rgba(76, 175, 80, 0.9);
+    color: white;
+}
+
+.availability-badge.not-available {
+    background-color: rgba(244, 67, 54, 0.9);
+    color: white;
+}
+
+/* Expected return info on book cards */
+.return-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.15) 0%, rgba(255, 193, 7, 0.1) 100%);
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xs);
+    color: #e65100;
+    font-weight: 500;
+}
+
+.return-info .return-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--warning-color);
+}
+
+/* Unavailable book card styling */
+.book-card.unavailable .book-card-image::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.08);
+    pointer-events: none;
+}
+
+.book-card.unavailable .book-cover {
+    filter: grayscale(20%);
+}
+
+/* Customer page - availability display in book details modal */
+.detail-return-info {
+    font-size: var(--font-size-sm);
+    color: var(--warning-color);
+    margin-top: var(--spacing-xs);
+}
+
+.detail-copies-info {
+    font-size: var(--font-size-sm);
+    color: var(--success-color);
+    margin-top: var(--spacing-xs);
+}
+
+/* ========================================
+   BORROWINGS MANAGEMENT STYLES
+   ======================================== */
+
+/* Borrowings filters in header */
+.borrowings-filters {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
+}
+
+.borrowings-filters .filter-select {
+    min-width: 180px;
+}
+
+.btn-icon-svg {
+    width: 16px;
+    height: 16px;
+    margin-right: var(--spacing-xs);
+}
+
+/* Borrowings Statistics Cards */
+.borrowings-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.stat-card {
+    background-color: var(--white);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.stat-icon.borrowed {
+    background-color: rgba(33, 150, 243, 0.15);
+    color: var(--info-color);
+}
+
+.stat-icon.overdue {
+    background-color: rgba(244, 67, 54, 0.15);
+    color: var(--danger-color);
+}
+
+.stat-icon.returned {
+    background-color: rgba(76, 175, 80, 0.15);
+    color: var(--success-color);
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-number {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--gray-900);
+    line-height: 1;
+}
+
+.stat-info .stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+    margin-top: var(--spacing-xs);
+}
+
+/* Borrowings Table Specific Styles */
+.borrowings-table .borrowing-book-info,
+.borrowings-table .borrowing-customer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.borrowings-table .book-title {
+    font-weight: 500;
+    color: var(--gray-900);
+}
+
+.borrowings-table .customer-name {
+    font-weight: 500;
+    color: var(--gray-900);
+}
+
+.borrowings-table .customer-email {
+    font-size: var(--font-size-xs);
+    color: var(--gray-500);
+}
+
+/* Overdue days indicator */
+.overdue-days {
+    display: block;
+    font-size: var(--font-size-xs);
+    color: var(--danger-color);
+    margin-top: 2px;
+}
+
+/* Status badges for borrowings */
+.status-badge.status-borrowed {
+    background-color: rgba(33, 150, 243, 0.15);
+    color: var(--info-color);
+}
+
+.status-badge.status-overdue {
+    background-color: rgba(244, 67, 54, 0.15);
+    color: var(--danger-color);
+}
+
+.status-badge.status-returned {
+    background-color: rgba(76, 175, 80, 0.15);
+    color: var(--success-color);
+}
+
+/* Action buttons container */
+.action-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+    justify-content: center;
+}
+
+/* Base action button style */
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-action svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Return button */
+.btn-action.btn-return {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: var(--success-color);
+}
+
+.btn-action.btn-return:hover {
+    background-color: var(--success-color);
+    color: var(--white);
+    transform: scale(1.05);
+}
+
+/* View button */
+.btn-action.btn-view {
+    background-color: rgba(33, 150, 243, 0.1);
+    color: var(--info-color);
+}
+
+.btn-action.btn-view:hover {
+    background-color: var(--info-color);
+    color: var(--white);
+    transform: scale(1.05);
+}
+
+/* Tab header with filters */
+.tab-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .borrowings-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .borrowings-filters {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .borrowings-filters .filter-select {
+        width: 100%;
+    }
+
+    .tab-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* ========================================
+   CUSTOMER BORROWINGS STYLES
+   ======================================== */
+
+/* Customer Tabs Container */
+.customer-tabs-container {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+    border-bottom: 2px solid var(--gray-200);
+    padding-bottom: var(--spacing-sm);
+}
+
+.customer-tab-button {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: transparent;
+    border: none;
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    color: var(--gray-600);
+    cursor: pointer;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+.customer-tab-button:hover {
+    color: var(--primary-color);
+    background-color: rgba(25, 118, 210, 0.05);
+}
+
+.customer-tab-button.active {
+    color: var(--primary-color);
+    background-color: rgba(25, 118, 210, 0.1);
+}
+
+.customer-tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--primary-color);
+}
+
+.customer-tab-button .tab-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Customer Tab Content */
+.customer-tab-content {
+    display: none;
+}
+
+.customer-tab-content.active {
+    display: block;
+}
+
+/* Customer Borrowings Stats */
+.customer-borrowings-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.borrowing-stat-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.borrowing-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.borrowing-stat-card .stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.borrowing-stat-card .stat-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.borrowing-stat-card .stat-icon.currently-borrowed {
+    background-color: rgba(33, 150, 243, 0.15);
+    color: var(--info-color);
+}
+
+.borrowing-stat-card .stat-icon.overdue-books {
+    background-color: rgba(244, 67, 54, 0.15);
+    color: var(--danger-color);
+}
+
+.borrowing-stat-card .stat-icon.returned-books {
+    background-color: rgba(76, 175, 80, 0.15);
+    color: var(--success-color);
+}
+
+.borrowing-stat-card .stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.borrowing-stat-card .stat-value {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--gray-900);
+}
+
+.borrowing-stat-card .stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+}
+
+/* My Borrowings Filter */
+.my-borrowings-filter {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.my-borrowings-filter label {
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
+/* My Borrowings List */
+.my-borrowings-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+/* My Borrowing Card */
+.my-borrowing-card {
+    display: flex;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.my-borrowing-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.borrowing-card-image {
+    width: 100px;
+    min-height: 150px;
+    flex-shrink: 0;
+    background-color: var(--gray-100);
+}
+
+.borrowing-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.borrowing-card-content {
+    flex: 1;
+    padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.borrowing-book-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--gray-900);
+    margin: 0;
+}
+
+.borrowing-book-author {
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+    margin: 0;
+}
+
+.borrowing-dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-sm);
+}
+
+.borrowing-dates .date-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.borrowing-dates .date-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--gray-500);
+}
+
+.borrowing-dates .date-item.overdue .date-icon,
+.borrowing-dates .date-item.overdue .date-value {
+    color: var(--danger-color);
+}
+
+.borrowing-dates .date-item.returned .date-icon,
+.borrowing-dates .date-item.returned .date-value {
+    color: var(--success-color);
+}
+
+.borrowing-dates .date-label {
+    display: block;
+    font-size: var(--font-size-xs);
+    color: var(--gray-500);
+}
+
+.borrowing-dates .date-value {
+    display: block;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--gray-800);
+}
+
+/* Days Info */
+.days-info {
+    display: inline-block;
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+    margin-top: var(--spacing-xs);
+}
+
+.days-info.warning {
+    color: var(--warning-color);
+    font-weight: 500;
+}
+
+.days-info.overdue {
+    color: var(--danger-color);
+    font-weight: 600;
+}
+
+/* Borrowing Card Status */
+.borrowing-card-status {
+    display: flex;
+    align-items: flex-start;
+    padding: var(--spacing-lg);
+}
+
+/* Empty State for Borrowings */
+#myBorrowingsEmptyState {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--spacing-2xl);
+    gap: var(--spacing-md);
+}
+
+#myBorrowingsEmptyState .empty-icon {
+    width: 64px;
+    height: 64px;
+    color: var(--gray-400);
+}
+
+#myBorrowingsEmptyState p {
+    color: var(--gray-600);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+/* Customer Borrowings Responsive */
+@media (max-width: 768px) {
+    .customer-tabs-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .customer-tab-button {
+        padding: var(--spacing-sm) var(--spacing-md);
+        white-space: nowrap;
+    }
+
+    .customer-borrowings-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .my-borrowing-card {
+        flex-direction: column;
+    }
+
+    .borrowing-card-image {
+        width: 100%;
+        height: 200px;
+    }
+
+    .borrowing-dates {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .borrowing-card-status {
+        padding: var(--spacing-md);
+        border-top: 1px solid var(--gray-200);
+    }
+}
+
+/* ========================================
+   BORROWING DETAILS MODAL STYLES
+   ======================================== */
+
+.borrowing-details-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.detail-section {
+    background-color: var(--gray-50);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--gray-200);
+}
+
+.detail-section-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.detail-section-header h4 {
+    margin: 0;
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--gray-800);
+}
+
+.section-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px dashed var(--gray-200);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.detail-row:first-child {
+    padding-top: 0;
+}
+
+.detail-row .detail-label {
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+    font-weight: 500;
+    min-width: 120px;
+    flex-shrink: 0;
+}
+
+.detail-row .detail-value {
+    font-size: var(--font-size-sm);
+    color: var(--gray-900);
+    font-weight: 500;
+    text-align: right;
+    word-break: break-word;
+}
+
+/* Detail Notes Section */
+.detail-notes {
+    background-color: var(--white);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    font-size: var(--font-size-sm);
+    color: var(--gray-700);
+    line-height: 1.6;
+    border: 1px solid var(--gray-200);
+    min-height: 60px;
+}
+
+.detail-notes.empty {
+    color: var(--gray-400);
+    font-style: italic;
+}
+
+/* Text color utilities for detail values */
+.text-danger {
+    color: var(--danger-color) !important;
+}
+
+.text-success {
+    color: var(--success-color) !important;
+}
+
+.text-warning {
+    color: var(--warning-color) !important;
+}
+
+.text-info {
+    color: var(--info-color) !important;
+}
+
+/* Borrowing Details Modal Footer */
+#borrowingDetailsModal .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-top: 1px solid var(--gray-200);
+    background-color: var(--gray-50);
+}
+
+/* Responsive styles for borrowing details modal */
+@media (max-width: 576px) {
+    .detail-row {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        align-items: flex-start;
+    }
+
+    .detail-row .detail-value {
+        text-align: left;
+    }
+
+    .detail-section {
+        padding: var(--spacing-md);
+    }
+
+    #borrowingDetailsModal .modal-footer {
+        flex-direction: column;
+    }
+
+    #borrowingDetailsModal .modal-footer .btn {
+        width: 100%;
+    }
 }
 

@@ -1,0 +1,24 @@
+{
+  "name": "saib-library-system",
+  "version": "1.0.0",
+  "description": "SAIB Library Management System",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "keywords": ["library", "management", "system"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mysql2": "^3.6.5",
+    "cors": "^2.8.5",
+    "bcryptjs": "^2.4.3",
+    "express-session": "^1.17.3"
+  }
+}
+
+
+
