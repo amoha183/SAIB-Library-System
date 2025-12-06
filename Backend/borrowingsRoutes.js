@@ -176,7 +176,7 @@ router.get('/member/:memberId', isAuthenticated, async (req, res) => {
     }
 
     const [borrowings] = await db.query(`
-      SELECT 
+      SELECT
         br.borrowing_id as id,
         br.book_id as bookId,
         br.borrow_date as borrowDate,
@@ -186,9 +186,10 @@ router.get('/member/:memberId', isAuthenticated, async (req, res) => {
         br.fine_amount as fineAmount,
         b.title as bookTitle,
         b.isbn,
-        CASE 
-          WHEN br.status = 'Borrowed' AND br.due_date < CURDATE() THEN TRUE 
-          ELSE FALSE 
+        b.image_uri as imageUri,
+        CASE
+          WHEN br.status = 'Borrowed' AND br.due_date < CURDATE() THEN TRUE
+          ELSE FALSE
         END as isOverdue
       FROM borrowings br
       JOIN books b ON br.book_id = b.book_id
@@ -196,9 +197,38 @@ router.get('/member/:memberId', isAuthenticated, async (req, res) => {
       ORDER BY br.borrow_date DESC
     `, [memberId]);
 
+    // Get authors for all books in borrowings
+    const bookIds = [...new Set(borrowings.map(br => br.bookId))];
+    let authorsMap = {};
+
+    if (bookIds.length > 0) {
+      const [bookAuthors] = await db.query(`
+        SELECT
+          ba.book_id,
+          CONCAT(a.first_name, ' ', a.last_name) as author_name
+        FROM book_authors ba
+        JOIN authors a ON ba.author_id = a.author_id
+        WHERE ba.book_id IN (?)
+      `, [bookIds]);
+
+      // Group authors by book
+      bookAuthors.forEach(ba => {
+        if (!authorsMap[ba.book_id]) {
+          authorsMap[ba.book_id] = [];
+        }
+        authorsMap[ba.book_id].push(ba.author_name);
+      });
+    }
+
+    // Add author to each borrowing
+    const borrowingsWithAuthors = borrowings.map(br => ({
+      ...br,
+      author: authorsMap[br.bookId] ? authorsMap[br.bookId].join(', ') : 'Unknown Author'
+    }));
+
     res.json({
       success: true,
-      data: borrowings
+      data: borrowingsWithAuthors
     });
 
   } catch (error) {
@@ -524,6 +554,7 @@ router.delete('/:id', isAuthenticated, isAdmin, async (req, res) => {
 });
 
 export default router;
+
 
 
 

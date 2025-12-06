@@ -1,9 +1,37 @@
 import express from 'express';
 import cors from 'cors';
 import session from 'express-session';
+import mysqlSession from 'express-mysql-session';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 import db from './db.js';
+
+// Create MySQL session store
+const MySQLStore = mysqlSession(session);
+const sessionStoreOptions = {
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT) || 3307,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'library_db_1',
+  clearExpired: true,
+  checkExpirationInterval: 900000, // 15 minutes
+  expiration: 86400000, // 24 hours
+  createDatabaseTable: true,
+  schema: {
+    tableName: 'sessions',
+    columnNames: {
+      session_id: 'session_id',
+      expires: 'expires',
+      data: 'data'
+    }
+  }
+};
+const sessionStore = new MySQLStore(sessionStoreOptions);
 
 // Import all route modules
 import authRoutes from './Backend/authRoutes.js';
@@ -14,6 +42,7 @@ import publishersRoutes from './Backend/publishersRoutes.js';
 import membersRoutes from './Backend/membersRoutes.js';
 import adminsRoutes from './Backend/adminsRoutes.js';
 import borrowingsRoutes from './Backend/borrowingsRoutes.js';
+import profileRoutes from './Backend/profileRoutes.js';
 
 // Get directory name for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -30,13 +59,15 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session configuration
+// Session configuration with MySQL store
 app.use(session({
-  secret: 'saib-library-secret-key-change-in-production',
+  key: 'saib_session_cookie',
+  secret: process.env.SESSION_SECRET || 'default-dev-secret-change-in-production',
+  store: sessionStore,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false, // Set to true in production with HTTPS
+    secure: process.env.NODE_ENV === 'production', // Auto-enable in production
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 // 24 hours
   }
@@ -73,6 +104,7 @@ app.use('/api/publishers', publishersRoutes);
 app.use('/api/members', membersRoutes);
 app.use('/api/admins', adminsRoutes);
 app.use('/api/borrowings', borrowingsRoutes);
+app.use('/api/profile', profileRoutes);
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
@@ -84,27 +116,9 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Debug endpoint to check database data (remove in production)
-app.get('/api/debug/admins', async (req, res) => {
-  try {
-    const [superAdmins] = await db.query('SELECT super_admin_id, first_name, last_name, email FROM super_admins');
-    const [admins] = await db.query('SELECT admin_id, first_name, last_name, email FROM admins');
-    res.json({
-      success: true,
-      superAdminsCount: superAdmins.length,
-      adminsCount: admins.length,
-      superAdmins: superAdmins,
-      admins: admins,
-      session: {
-        userId: req.session?.userId,
-        userType: req.session?.userType,
-        email: req.session?.email
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
+// Debug endpoint - DISABLED for security (was exposing admin data without auth)
+// To re-enable for development, uncomment and add authentication middleware
+// app.get('/api/debug/admins', isAuthenticated, isSuperAdmin, async (req, res) => { ... });
 
 // Serve the main frontend page
 app.get('/', (req, res) => {
@@ -127,6 +141,18 @@ async function startServer() {
     console.log(`\n📚 SAIB Library System is running!`);
     console.log(`   Server: http://localhost:${PORT}`);
     console.log(`   Health Check: http://localhost:${PORT}/api/health\n`);
+  }).on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`\n❌ Port ${PORT} is already in use!`);
+      console.error(`   Another process is using port ${PORT}.`);
+      console.error(`   Please either:`);
+      console.error(`   1. Stop the other process using port ${PORT}`);
+      console.error(`   2. Change the PORT in your .env file or environment variables\n`);
+      process.exit(1);
+    } else {
+      console.error('\n❌ Server error:', err.message);
+      process.exit(1);
+    }
   });
 }
 

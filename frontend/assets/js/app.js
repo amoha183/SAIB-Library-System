@@ -620,6 +620,9 @@ async function loadPublishers() {
  * Initialize admin dashboard
  */
 async function initAdminPage() {
+    // Initialize profile dropdown
+    initProfileDropdown();
+
     await loadBooks();
     await loadAuthors();
     await loadGenres();
@@ -733,10 +736,8 @@ function renderBooksTable() {
 
     tableBody.innerHTML = '';
 
-    // Use filtered data if available, otherwise use all books
-    const dataToRender = filteredAdminBooksData.length > 0 || document.getElementById('adminBookSearch')?.value
-        ? filteredAdminBooksData
-        : booksData;
+    // Always use filtered data - it's initialized with all data on load
+    const dataToRender = filteredAdminBooksData;
 
     if (dataToRender.length === 0) {
         if (emptyState) emptyState.style.display = 'block';
@@ -818,10 +819,14 @@ function filterAdminBooks() {
     // Apply availability filter
     if (availabilityFilter) {
         filtered = filtered.filter(book => {
+            // Handle both camelCase and snake_case field names, and type conversion
+            const availableCopies = book.availableCopies ?? book.available_copies ?? 0;
+            const isAvailable = book.isAvailable === true || book.isAvailable === 1 || availableCopies > 0;
+
             if (availabilityFilter === 'available') {
-                return book.isAvailable === true || book.available_copies > 0;
+                return isAvailable;
             } else if (availabilityFilter === 'borrowed') {
-                return book.isAvailable === false || book.available_copies === 0;
+                return !isAvailable;
             }
             return true;
         });
@@ -1666,9 +1671,21 @@ function closeBorrowModal() {
  * Initialize customer page
  */
 async function initCustomerPage() {
+    // Initialize profile dropdown
+    initProfileDropdown();
+
     await loadBooks();
     populateCustomerFilterDropdowns();
     renderBooksGrid();
+
+    // Hide "My Borrowings" tab for admin/superadmin users (they don't have borrowings)
+    const userType = sessionStorage.getItem('userType');
+    if (userType === 'admin' || userType === 'superadmin') {
+        const myBorrowingsTabBtn = document.getElementById('myBorrowingsTabBtn');
+        const myBorrowingsTab = document.getElementById('myBorrowingsTab');
+        if (myBorrowingsTabBtn) myBorrowingsTabBtn.style.display = 'none';
+        if (myBorrowingsTab) myBorrowingsTab.style.display = 'none';
+    }
 }
 
 // ========================================
@@ -1707,6 +1724,15 @@ function switchCustomerTab(tabName) {
  */
 async function loadMyBorrowings() {
     const memberId = sessionStorage.getItem('userId');
+    const userType = sessionStorage.getItem('userType');
+
+    // Admin/superadmin users don't have borrowings
+    if (userType === 'admin' || userType === 'superadmin') {
+        myBorrowingsData = [];
+        filteredMyBorrowingsData = [];
+        renderMyBorrowingsList();
+        return;
+    }
 
     if (!memberId) {
         console.error('No user ID found in session');
@@ -1822,7 +1848,7 @@ function createMyBorrowingCard(borrowing) {
     const statusClass = status.toLowerCase();
 
     const bookTitle = borrowing.book_title || borrowing.bookTitle || 'Unknown Book';
-    const bookImage = borrowing.image_uri || borrowing.imageUri || 'https://via.placeholder.com/100x150?text=No+Cover';
+    const bookImage = borrowing.image_uri || borrowing.imageUri || null;
     const bookAuthor = borrowing.author || borrowing.book_author || 'Unknown Author';
 
     const borrowDate = formatDate(borrowing.borrow_date || borrowing.borrowDate);
@@ -1852,9 +1878,23 @@ function createMyBorrowingCard(borrowing) {
         daysInfo = `<span class="days-info overdue">${diffDays} days overdue!</span>`;
     }
 
+    // Create book cover placeholder with book icon if no image
+    let bookCoverHtml;
+    if (bookImage) {
+        bookCoverHtml = `<img src="${escapeHtml(bookImage)}" alt="${escapeHtml(bookTitle)}" onerror="this.parentElement.innerHTML='<div class=\\'book-cover-placeholder\\'><svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'32\\' height=\\'32\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M4 19.5A2.5 2.5 0 0 1 6.5 17H20\\'></path><path d=\\'M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z\\'></path></svg></div>'">`;
+    } else {
+        bookCoverHtml = `
+            <div class="book-cover-placeholder">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+            </div>`;
+    }
+
     card.innerHTML = `
         <div class="borrowing-card-image">
-            <img src="${escapeHtml(bookImage)}" alt="${escapeHtml(bookTitle)}" onerror="this.src='https://via.placeholder.com/100x150?text=No+Cover'">
+            ${bookCoverHtml}
         </div>
         <div class="borrowing-card-content">
             <h3 class="borrowing-book-title">${escapeHtml(bookTitle)}</h3>
@@ -1974,11 +2014,14 @@ function applyFilters() {
             return false;
         }
 
-        // Availability filter
-        if (availabilityFilter === 'available' && !book.isAvailable) {
+        // Availability filter - handle type conversion from MySQL (1/0 vs true/false)
+        const availableCopies = book.availableCopies ?? book.available_copies ?? 0;
+        const bookIsAvailable = book.isAvailable === true || book.isAvailable === 1 || availableCopies > 0;
+
+        if (availabilityFilter === 'available' && !bookIsAvailable) {
             return false;
         }
-        if (availabilityFilter === 'borrowed' && book.isAvailable) {
+        if (availabilityFilter === 'borrowed' && bookIsAvailable) {
             return false;
         }
 
@@ -2247,6 +2290,9 @@ function sortBooks(books, sortOption) {
  * Initialize super admin dashboard
  */
 async function initSuperAdminPage() {
+    // Initialize profile dropdown
+    initProfileDropdown();
+
     await Promise.all([
         loadBooks(),
         loadCustomers(),
@@ -2760,10 +2806,8 @@ function renderCustomersTable() {
 
     tableBody.innerHTML = '';
 
-    // Use filtered data if available, otherwise use all customers
-    const dataToRender = filteredCustomersData.length > 0 || document.getElementById('adminCustomerSearch')?.value
-        ? filteredCustomersData
-        : customersData;
+    // Always use filtered data - it's initialized with all data on load
+    const dataToRender = filteredCustomersData;
 
     if (dataToRender.length === 0) {
         if (emptyState) emptyState.style.display = 'block';
@@ -2868,10 +2912,8 @@ function renderAdminsTable() {
 
     tableBody.innerHTML = '';
 
-    // Use filtered data if available, otherwise use all admins
-    const dataToRender = filteredAdminsData.length > 0 || document.getElementById('adminAdminSearch')?.value
-        ? filteredAdminsData
-        : adminsData;
+    // Always use filtered data - it's initialized with all data on load
+    const dataToRender = filteredAdminsData;
 
     if (dataToRender.length === 0 && adminsData.length === 0) {
         if (emptyState) {
@@ -3426,6 +3468,332 @@ function formatDate(date) {
     if (!date) return 'N/A';
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(date).toLocaleDateString('en-US', options);
+}
+
+// ========================================
+// PROFILE DROPDOWN & PAGE FUNCTIONS
+// ========================================
+
+// Toggle profile dropdown visibility
+function toggleProfileDropdown() {
+    const dropdown = document.getElementById('profileDropdownMenu');
+    if (dropdown) {
+        dropdown.classList.toggle('show');
+    }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('profileDropdownMenu');
+    const profileBtn = e.target.closest('.profile-btn');
+
+    if (dropdown && dropdown.classList.contains('show') && !profileBtn) {
+        dropdown.classList.remove('show');
+    }
+});
+
+// Initialize profile dropdown with user data
+function initProfileDropdown() {
+    const userType = sessionStorage.getItem('userType');
+    const userName = sessionStorage.getItem('userName') || 'User';
+
+    // Set user initials
+    const initialsElement = document.getElementById('profileInitials');
+    if (initialsElement) {
+        const initials = userName.split(' ')
+            .map(n => n[0])
+            .join('')
+            .toUpperCase()
+            .substring(0, 2);
+        initialsElement.textContent = initials || 'U';
+    }
+
+    // Set dropdown user name
+    const dropdownNameElement = document.getElementById('dropdownUserName');
+    if (dropdownNameElement) {
+        dropdownNameElement.textContent = userName;
+    }
+
+    // Set dropdown user role
+    const dropdownRoleElement = document.getElementById('dropdownUserRole');
+    if (dropdownRoleElement) {
+        let roleText = 'Member';
+        if (userType === 'superadmin') roleText = 'Super Administrator';
+        else if (userType === 'admin') roleText = 'Administrator';
+        else if (userType === 'customer') roleText = 'Member';
+        dropdownRoleElement.textContent = roleText;
+    }
+}
+
+// Initialize profile page
+async function initProfilePage() {
+    const userType = sessionStorage.getItem('userType');
+    const userId = sessionStorage.getItem('userId');
+
+    if (!userType || !userId) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    // Initialize dropdown
+    initProfileDropdown();
+
+    // Show/hide admin links based on user type
+    const superAdminLink = document.getElementById('superAdminLink');
+    const adminLink = document.getElementById('adminLink');
+
+    if (superAdminLink) {
+        superAdminLink.style.display = userType === 'superadmin' ? 'block' : 'none';
+    }
+    if (adminLink) {
+        adminLink.style.display = (userType === 'admin' || userType === 'superadmin') ? 'block' : 'none';
+    }
+
+    // Show/hide sections based on user type
+    const nationalIdGroup = document.getElementById('nationalIdGroup');
+    const memberInfoSection = document.getElementById('memberInfoSection');
+
+    if (nationalIdGroup) {
+        nationalIdGroup.style.display = (userType === 'admin' || userType === 'superadmin') ? 'block' : 'none';
+    }
+    if (memberInfoSection) {
+        memberInfoSection.style.display = userType === 'customer' ? 'block' : 'none';
+    }
+
+    // Fetch profile data
+    try {
+        const response = await fetch('/api/profile', {
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch profile');
+        }
+
+        const data = await response.json();
+        populateProfileForm(data);
+    } catch (error) {
+        console.error('Error fetching profile:', error);
+        showToast('Failed to load profile data', 'error');
+    }
+
+    // Setup form handlers
+    setupProfileFormHandlers();
+}
+
+// Populate profile form with data
+function populateProfileForm(data) {
+    const userType = sessionStorage.getItem('userType');
+
+    // Header info
+    const fullNameElement = document.getElementById('profileFullName');
+    const largeInitialsElement = document.getElementById('profileLargeInitials');
+    const roleBadgeElement = document.getElementById('profileRoleBadge');
+    const emailDisplayElement = document.getElementById('profileEmailDisplay');
+
+    const fullName = `${data.first_name || ''} ${data.last_name || ''}`.trim() || 'User';
+
+    if (fullNameElement) fullNameElement.textContent = fullName;
+    if (emailDisplayElement) emailDisplayElement.textContent = data.email || '';
+
+    if (largeInitialsElement) {
+        const initials = fullName.split(' ')
+            .map(n => n[0])
+            .join('')
+            .toUpperCase()
+            .substring(0, 2);
+        largeInitialsElement.textContent = initials || 'U';
+    }
+
+    if (roleBadgeElement) {
+        let roleText = 'Member';
+        if (userType === 'superadmin') roleText = 'Super Administrator';
+        else if (userType === 'admin') roleText = 'Administrator';
+        roleBadgeElement.textContent = roleText;
+    }
+
+    // Form fields
+    document.getElementById('profileEmail').value = data.email || '';
+    document.getElementById('profileFirstName').value = data.first_name || '';
+    document.getElementById('profileLastName').value = data.last_name || '';
+    document.getElementById('profilePhone').value = data.phone || '';
+    document.getElementById('profileAddress').value = data.address || '';
+
+    if (data.date_of_birth) {
+        const dob = new Date(data.date_of_birth);
+        document.getElementById('profileDOB').value = dob.toISOString().split('T')[0];
+    }
+
+    // Admin specific fields
+    if (userType === 'admin' || userType === 'superadmin') {
+        const nationalIdInput = document.getElementById('profileNationalId');
+        if (nationalIdInput) {
+            nationalIdInput.value = data.national_id || '';
+        }
+    }
+
+    // Customer specific info
+    if (userType === 'customer') {
+        const memberSinceElement = document.getElementById('memberSince');
+        const memberStatusElement = document.getElementById('memberStatus');
+
+        if (memberSinceElement && data.membership_start_date) {
+            const startDate = new Date(data.membership_start_date);
+            memberSinceElement.textContent = startDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        if (memberStatusElement) {
+            const isActive = data.is_active !== false && data.is_active !== 0;
+            memberStatusElement.textContent = isActive ? 'Active' : 'Inactive';
+            memberStatusElement.className = `profile-info-value ${isActive ? 'status-active' : 'status-inactive'}`;
+        }
+    }
+
+    // Store original data for reset
+    window.originalProfileData = { ...data };
+}
+
+// Setup profile form handlers
+function setupProfileFormHandlers() {
+    const profileForm = document.getElementById('profileForm');
+    const passwordForm = document.getElementById('passwordForm');
+
+    if (profileForm) {
+        profileForm.addEventListener('submit', handleProfileUpdate);
+    }
+
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', handlePasswordChange);
+    }
+}
+
+// Handle profile update
+async function handleProfileUpdate(e) {
+    e.preventDefault();
+
+    const userType = sessionStorage.getItem('userType');
+
+    const formData = {
+        first_name: document.getElementById('profileFirstName').value.trim(),
+        last_name: document.getElementById('profileLastName').value.trim(),
+        phone: document.getElementById('profilePhone').value.trim(),
+        address: document.getElementById('profileAddress').value.trim(),
+        date_of_birth: document.getElementById('profileDOB').value || null
+    };
+
+    // Add national ID for admins
+    if (userType === 'admin' || userType === 'superadmin') {
+        const nationalIdInput = document.getElementById('profileNationalId');
+        if (nationalIdInput) {
+            formData.national_id = nationalIdInput.value.trim();
+        }
+    }
+
+    try {
+        const response = await fetch('/api/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to update profile');
+        }
+
+        const result = await response.json();
+
+        // Update session storage with new name
+        const newName = `${formData.first_name} ${formData.last_name}`.trim();
+        sessionStorage.setItem('userName', newName);
+
+        // Update dropdown
+        initProfileDropdown();
+
+        // Update header
+        const fullNameElement = document.getElementById('profileFullName');
+        if (fullNameElement) fullNameElement.textContent = newName;
+
+        const largeInitialsElement = document.getElementById('profileLargeInitials');
+        if (largeInitialsElement) {
+            const initials = newName.split(' ')
+                .map(n => n[0])
+                .join('')
+                .toUpperCase()
+                .substring(0, 2);
+            largeInitialsElement.textContent = initials || 'U';
+        }
+
+        showToast('Profile updated successfully', 'success');
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        showToast(error.message || 'Failed to update profile', 'error');
+    }
+}
+
+// Handle password change
+async function handlePasswordChange(e) {
+    e.preventDefault();
+
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    // Validate passwords match
+    if (newPassword !== confirmPassword) {
+        showToast('New passwords do not match', 'error');
+        return;
+    }
+
+    // Validate password length
+    if (newPassword.length < 6) {
+        showToast('New password must be at least 6 characters', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/profile/password', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                current_password: currentPassword,
+                new_password: newPassword
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to change password');
+        }
+
+        // Clear form
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+
+        showToast('Password changed successfully', 'success');
+    } catch (error) {
+        console.error('Error changing password:', error);
+        showToast(error.message || 'Failed to change password', 'error');
+    }
+}
+
+// Reset profile form to original values
+function resetProfileForm() {
+    if (window.originalProfileData) {
+        populateProfileForm(window.originalProfileData);
+        showToast('Form reset to original values', 'info');
+    }
 }
 
 // ========================================

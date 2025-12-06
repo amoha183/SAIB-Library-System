@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(wc:*)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout:*)",
+      "Bash(curl:*)",
+      "Bash(node Backend/hashPassword.js:*)",
+      "Bash(npm install:*)",
+      "Bash(powershell:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(cmd /c \"taskkill /PID 22596 /F\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

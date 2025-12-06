@@ -1,15 +1,28 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
+import rateLimit from 'express-rate-limit';
 import db from '../db.js';
 
 const router = express.Router();
+
+// Rate limiter for login attempts - prevents brute force attacks
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 login attempts per window
+  message: {
+    success: false,
+    message: 'Too many login attempts. Please try again after 15 minutes.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 /**
  * @route   POST /api/auth/login
  * @desc    Authenticate user and create session
  * @access  Public
  */
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -220,6 +233,7 @@ router.post('/register', async (req, res) => {
 });
 
 export default router;
+
 
 
 

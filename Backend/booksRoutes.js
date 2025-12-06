@@ -13,24 +13,24 @@ router.get('/', async (req, res) => {
   try {
     // Get all books with publisher info
     const [books] = await db.query(`
-      SELECT 
+      SELECT
         b.book_id as id,
         b.isbn,
         b.title,
-        b.publication_date,
+        b.publication_date as publicationDate,
         YEAR(b.publication_date) as year,
         b.edition,
         b.language,
-        b.page_count,
+        b.page_count as pageCount,
         b.description,
         b.image_uri as image,
-        b.total_copies,
-        b.available_copies,
+        b.total_copies as totalCopies,
+        b.available_copies as availableCopies,
         b.available_copies > 0 as isAvailable,
-        b.created_at,
-        b.updated_at,
-        p.publisher_id,
-        p.name as publisher_name
+        b.created_at as createdAt,
+        b.updated_at as updatedAt,
+        p.publisher_id as publisherId,
+        p.name as publisherName
       FROM books b
       LEFT JOIN publishers p ON b.publisher_id = p.publisher_id
       ORDER BY b.book_id DESC
@@ -98,9 +98,9 @@ router.get('/', async (req, res) => {
         authors: authors,
         category: genres.map(g => g.name).join(', ') || 'Uncategorized',
         genres: genres,
-        publisher: book.publisher_name ? {
-          id: book.publisher_id,
-          name: book.publisher_name
+        publisher: book.publisherName ? {
+          id: book.publisherId,
+          name: book.publisherName
         } : null,
         borrowedBy: borrowing ? borrowing.borrower_name : null,
         borrowDate: borrowing ? borrowing.borrow_date : null,
@@ -135,24 +135,24 @@ router.get('/:id', async (req, res) => {
 
     // Get book with publisher info
     const [books] = await db.query(`
-      SELECT 
+      SELECT
         b.book_id as id,
         b.isbn,
         b.title,
-        b.publication_date,
+        b.publication_date as publicationDate,
         YEAR(b.publication_date) as year,
         b.edition,
         b.language,
-        b.page_count,
+        b.page_count as pageCount,
         b.description,
         b.image_uri as image,
-        b.total_copies,
-        b.available_copies,
+        b.total_copies as totalCopies,
+        b.available_copies as availableCopies,
         b.available_copies > 0 as isAvailable,
-        b.created_at,
-        b.updated_at,
-        p.publisher_id,
-        p.name as publisher_name
+        b.created_at as createdAt,
+        b.updated_at as updatedAt,
+        p.publisher_id as publisherId,
+        p.name as publisherName
       FROM books b
       LEFT JOIN publishers p ON b.publisher_id = p.publisher_id
       WHERE b.book_id = ?
@@ -212,9 +212,9 @@ router.get('/:id', async (req, res) => {
         authors: authors,
         category: genres.map(g => g.name).join(', ') || 'Uncategorized',
         genres: genres,
-        publisher: book.publisher_name ? {
-          id: book.publisher_id,
-          name: book.publisher_name
+        publisher: book.publisherName ? {
+          id: book.publisherId,
+          name: book.publisherName
         } : null,
         borrowedBy: borrowing ? borrowing.borrower_name : null,
         borrowDate: borrowing ? borrowing.borrow_date : null,
@@ -493,6 +493,7 @@ router.delete('/:id', isAuthenticated, isAdmin, async (req, res) => {
 });
 
 export default router;
+
 
 
 
