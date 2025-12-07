@@ -317,6 +317,145 @@ router.put('/:id', isAuthenticated, isSuperAdmin, async (req, res) => {
 });
 
 /**
+ * @route   PUT /api/admins/:id/role
+ * @desc    Change admin role (move between admins and super_admins tables)
+ * @access  Super Admin
+ */
+router.put('/:id/role', isAuthenticated, isSuperAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { currentRole, newRole, adminType } = req.body;
+
+    if (!currentRole || !newRole) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current role and new role are required'
+      });
+    }
+
+    // Determine source and target tables
+    const isCurrentlySuper = currentRole === 'Super Admin' || adminType === 'super';
+    const isBecomingSuper = newRole === 'Super Admin';
+
+    // If role isn't actually changing, just return success
+    if (isCurrentlySuper === isBecomingSuper) {
+      return res.json({
+        success: true,
+        message: 'Role unchanged'
+      });
+    }
+
+    // Prevent a super admin from downgrading themselves
+    if (isCurrentlySuper && !isBecomingSuper) {
+      const adminId = parseInt(id);
+      if (req.session.userType === 'superadmin' && req.session.userId === adminId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot downgrade your own account. Another super admin must change your role.'
+        });
+      }
+
+      // Ensure at least one super admin remains after downgrade
+      const [superAdminCount] = await db.query('SELECT COUNT(*) as count FROM super_admins');
+      if (superAdminCount[0].count <= 1) {
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot downgrade the last super admin. At least one super admin must remain.'
+        });
+      }
+    }
+
+    const sourceTable = isCurrentlySuper ? 'super_admins' : 'admins';
+    const sourceIdColumn = isCurrentlySuper ? 'super_admin_id' : 'admin_id';
+    const targetTable = isBecomingSuper ? 'super_admins' : 'admins';
+    const targetIdColumn = isBecomingSuper ? 'super_admin_id' : 'admin_id';
+
+    // Get the admin's current data
+    const [adminData] = await db.query(`
+      SELECT 
+        first_name, last_name, email, password, phone, address, date_of_birth
+      FROM ${sourceTable}
+      WHERE ${sourceIdColumn} = ?
+    `, [id]);
+
+    if (adminData.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin not found'
+      });
+    }
+
+    const admin = adminData[0];
+
+    // Check if email already exists in target table
+    const [existing] = await db.query(
+      `SELECT ${targetIdColumn} FROM ${targetTable} WHERE email = ?`,
+      [admin.email]
+    );
+
+    if (existing.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: 'An admin with this email already exists in the target role table'
+      });
+    }
+
+    // Use transaction to ensure data consistency
+    const connection = await db.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // Insert into target table
+      const [insertResult] = await connection.query(`
+        INSERT INTO ${targetTable} (first_name, last_name, email, password, phone, address, date_of_birth)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `, [
+        admin.first_name,
+        admin.last_name,
+        admin.email,
+        admin.password,
+        admin.phone,
+        admin.address,
+        admin.date_of_birth
+      ]);
+
+      const newId = insertResult.insertId;
+
+      // Delete from source table
+      await connection.query(
+        `DELETE FROM ${sourceTable} WHERE ${sourceIdColumn} = ?`,
+        [id]
+      );
+
+      await connection.commit();
+
+      res.json({
+        success: true,
+        message: `Admin role changed from ${currentRole} to ${newRole} successfully`,
+        data: {
+          newId: newId,
+          newRole: newRole
+        }
+      });
+
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+
+  } catch (error) {
+    console.error('Error changing admin role:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error changing admin role',
+      error: error.message
+    });
+  }
+});
+
+/**
  * @route   DELETE /api/admins/:id
  * @desc    Delete (deactivate) an admin
  * @access  Super Admin
@@ -377,6 +516,133 @@ router.delete('/:id', isAuthenticated, isSuperAdmin, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error deleting admin',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * @route   PUT /api/admins/:id/role
+ * @desc    Change admin role (Admin <-> Super Admin)
+ * @access  Super Admin
+ */
+router.put('/:id/role', isAuthenticated, isSuperAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { currentRole, newRole } = req.body;
+
+    // Validate input
+    if (!currentRole || !newRole) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current role and new role are required'
+      });
+    }
+
+    if (!['Admin', 'Super Admin'].includes(currentRole) || !['Admin', 'Super Admin'].includes(newRole)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid role. Must be "Admin" or "Super Admin"'
+      });
+    }
+
+    // No change needed
+    if (currentRole === newRole) {
+      return res.status(400).json({
+        success: false,
+        message: 'New role is the same as current role'
+      });
+    }
+
+    // Prevent changing your own role
+    if (req.session.userType === 'superadmin' && currentRole === 'Super Admin' && req.session.userId === parseInt(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot change your own role'
+      });
+    }
+
+    if (currentRole === 'Admin' && newRole === 'Super Admin') {
+      // Promote Admin to Super Admin
+      // 1. Get admin data
+      const [admins] = await db.query(`
+        SELECT first_name, last_name, email, national_id, password, phone, address, date_of_birth
+        FROM admins WHERE admin_id = ?
+      `, [id]);
+
+      if (admins.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Admin not found'
+        });
+      }
+
+      const admin = admins[0];
+
+      // 2. Insert into super_admins table
+      const [result] = await db.query(`
+        INSERT INTO super_admins (first_name, last_name, email, national_id, password, phone, address, date_of_birth)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `, [admin.first_name, admin.last_name, admin.email, admin.national_id, admin.password, admin.phone, admin.address, admin.date_of_birth]);
+
+      // 3. Delete from admins table
+      await db.query('DELETE FROM admins WHERE admin_id = ?', [id]);
+
+      res.json({
+        success: true,
+        message: 'Admin promoted to Super Admin successfully',
+        newId: result.insertId,
+        newRole: 'Super Admin'
+      });
+
+    } else if (currentRole === 'Super Admin' && newRole === 'Admin') {
+      // Demote Super Admin to Admin
+      // 1. Check if this is the last super admin
+      const [superAdminCount] = await db.query('SELECT COUNT(*) as count FROM super_admins');
+      if (superAdminCount[0].count <= 1) {
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot demote the last super admin'
+        });
+      }
+
+      // 2. Get super admin data
+      const [superAdmins] = await db.query(`
+        SELECT first_name, last_name, email, national_id, password, phone, address, date_of_birth
+        FROM super_admins WHERE super_admin_id = ?
+      `, [id]);
+
+      if (superAdmins.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Super Admin not found'
+        });
+      }
+
+      const superAdmin = superAdmins[0];
+
+      // 3. Insert into admins table (with is_active = true)
+      const [result] = await db.query(`
+        INSERT INTO admins (first_name, last_name, email, national_id, password, phone, address, date_of_birth, is_active)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, TRUE)
+      `, [superAdmin.first_name, superAdmin.last_name, superAdmin.email, superAdmin.national_id, superAdmin.password, superAdmin.phone, superAdmin.address, superAdmin.date_of_birth]);
+
+      // 4. Delete from super_admins table
+      await db.query('DELETE FROM super_admins WHERE super_admin_id = ?', [id]);
+
+      res.json({
+        success: true,
+        message: 'Super Admin demoted to Admin successfully',
+        newId: result.insertId,
+        newRole: 'Admin'
+      });
+    }
+
+  } catch (error) {
+    console.error('Error changing admin role:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error changing admin role',
       error: error.message
     });
   }

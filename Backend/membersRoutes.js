@@ -275,8 +275,18 @@ router.put('/:id', isAuthenticated, async (req, res) => {
 router.delete('/:id', isAuthenticated, isAdmin, async (req, res) => {
   try {
     const { id } = req.params;
+    const memberId = parseInt(id);
 
-    const [existing] = await db.query('SELECT member_id FROM members WHERE member_id = ?', [id]);
+    if (isNaN(memberId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid member ID'
+      });
+    }
+
+    console.log('Deleting member with ID:', memberId);
+
+    const [existing] = await db.query('SELECT member_id FROM members WHERE member_id = ?', [memberId]);
     if (existing.length === 0) {
       return res.status(404).json({
         success: false,
@@ -287,7 +297,7 @@ router.delete('/:id', isAuthenticated, isAdmin, async (req, res) => {
     // Check for active borrowings
     const [activeBorrowings] = await db.query(
       'SELECT borrowing_id FROM borrowings WHERE member_id = ? AND status = "Borrowed"',
-      [id]
+      [memberId]
     );
 
     if (activeBorrowings.length > 0) {
@@ -297,12 +307,15 @@ router.delete('/:id', isAuthenticated, isAdmin, async (req, res) => {
       });
     }
 
-    // Soft delete - set is_active to false
-    await db.query('UPDATE members SET is_active = FALSE WHERE member_id = ?', [id]);
+    // Hard delete - permanently remove from database
+    // Note: This will cascade delete related borrowings if foreign key constraints allow
+    await db.query('DELETE FROM members WHERE member_id = ?', [memberId]);
+    
+    console.log('Member deleted successfully:', memberId);
 
     res.json({
       success: true,
-      message: 'Member deactivated successfully'
+      message: 'Member deleted successfully'
     });
 
   } catch (error) {
@@ -316,6 +329,8 @@ router.delete('/:id', isAuthenticated, isAdmin, async (req, res) => {
 });
 
 export default router;
+
+
 
 
 

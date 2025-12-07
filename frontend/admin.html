@@ -70,6 +70,15 @@
                     </svg>
                     Books Management
                 </button>
+                <button class="tab-button" onclick="switchTab('customers')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Customers
+                </button>
                 <button class="tab-button" onclick="switchTab('borrowings')">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -170,6 +179,77 @@
 
                     <div id="booksEmptyState" class="empty-state" style="display: none;">
                         <p>No books found. Click "Add New Book" to get started.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customers Tab Content (Admin - View and Delete Only) -->
+            <div id="customersTab" class="tab-content">
+                <div class="tab-header">
+                    <h2>Customer Management</h2>
+                    <!-- No Add button for regular admin - view and delete only -->
+                </div>
+
+                <!-- Search and Filter Section for Customers -->
+                <div class="admin-filters-container">
+                    <div class="admin-search-row">
+                        <!-- Search Bar -->
+                        <div class="admin-search-box">
+                            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                            <input type="text" id="adminCustomerSearch" class="admin-search-input" placeholder="Search by name, email, phone..." onkeyup="filterAdminCustomers()">
+                        </div>
+
+                        <!-- Sort Dropdown -->
+                        <div class="admin-sort-box">
+                            <label for="adminCustomerSort" class="sort-label">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sort-icon">
+                                    <path d="M3 6h18M7 12h10M11 18h2"></path>
+                                </svg>
+                                Sort:
+                            </label>
+                            <select id="adminCustomerSort" class="filter-select" onchange="filterAdminCustomers()">
+                                <option value="default">Default</option>
+                                <option value="name-asc">Name (A-Z)</option>
+                                <option value="name-desc">Name (Z-A)</option>
+                                <option value="email-asc">Email (A-Z)</option>
+                                <option value="email-desc">Email (Z-A)</option>
+                                <option value="date-asc">Joined (Oldest)</option>
+                                <option value="date-desc">Joined (Newest)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="admin-filter-row">
+                        <!-- Clear Filters Button -->
+                        <button type="button" class="btn btn-secondary btn-clear-filters" onclick="clearAdminCustomerFilters()">
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="books-table" id="customersTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Joined Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customersTableBody">
+                            <!-- Customers will be dynamically rendered here -->
+                        </tbody>
+                    </table>
+
+                    <div id="customersEmptyState" class="empty-state" style="display: none;">
+                        <p>No customers found.</p>
                     </div>
                 </div>
             </div>
@@ -359,11 +439,13 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="bookGenre" class="form-label">Genre <span class="required">*</span></label>
-                        <select id="bookGenre" class="form-input" required>
-                            <option value="">Select a genre</option>
-                            <!-- Options populated dynamically from database -->
-                        </select>
+                        <label class="form-label">Genres <span class="required">*</span></label>
+                        <div id="bookGenresContainer" class="genres-checkbox-container">
+                            <!-- Genres will be populated dynamically -->
+                        </div>
+                        <small class="form-hint" style="display: block; margin-top: 8px; color: var(--gray-600);">
+                            Select one or more genres for this book
+                        </small>
                     </div>
                 </div>
 
@@ -550,10 +632,18 @@
                 <div id="borrowFormContent">
                     <div class="form-group">
                         <label for="borrowMember" class="form-label">Select Customer <span class="required">*</span></label>
-                        <select id="borrowMember" class="form-input" required>
-                            <option value="">Select a customer</option>
-                            <!-- Members will be populated dynamically -->
-                        </select>
+                        <div class="searchable-dropdown" id="borrowMemberDropdown">
+                            <input 
+                                type="text" 
+                                id="borrowMemberSearch" 
+                                class="form-input" 
+                                placeholder="Search by name, email, or phone..."
+                                autocomplete="off"
+                                required
+                            >
+                            <input type="hidden" id="borrowMember" name="borrowMember">
+                            <div class="dropdown-list" id="borrowMemberList" style="display: none;"></div>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -658,8 +748,8 @@
                 <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete this book?</p>
-                <p class="text-muted" id="deleteBookTitle"></p>
+                <p id="deleteMessage">Are you sure you want to delete this item?</p>
+                <p class="text-muted" id="deleteItemName"></p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">

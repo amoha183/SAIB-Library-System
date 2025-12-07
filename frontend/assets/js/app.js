@@ -627,8 +627,9 @@ async function initAdminPage() {
     await loadAuthors();
     await loadGenres();
     await loadPublishers();
-    await loadCustomers(); // For borrowing
+    await loadCustomers(); // For borrowing and customers tab
     renderBooksTable();
+    renderAdminCustomersTable(); // Render customers table for admin (delete only)
     populateFormDropdowns();
     
     const bookForm = document.getElementById('bookForm');
@@ -653,14 +654,18 @@ async function initAdminPage() {
  */
 function populateFormDropdowns() {
     // Populate single genre dropdown if exists
-    const genreDropdown = document.getElementById('bookGenre');
-    if (genreDropdown) {
-        genreDropdown.innerHTML = '<option value="">Select a genre</option>';
+    // Populate genres checkboxes
+    const genresContainer = document.getElementById('bookGenresContainer');
+    if (genresContainer && genresData) {
+        genresContainer.innerHTML = '';
         genresData.forEach(genre => {
-            const option = document.createElement('option');
-            option.value = genre.id;
-            option.textContent = genre.name;
-            genreDropdown.appendChild(option);
+            const checkboxItem = document.createElement('div');
+            checkboxItem.className = 'genre-checkbox-item';
+            checkboxItem.innerHTML = `
+                <input type="checkbox" id="genre_${genre.id}" name="bookGenres" value="${genre.id}">
+                <label for="genre_${genre.id}">${escapeHtml(genre.name)}</label>
+            `;
+            genresContainer.appendChild(checkboxItem);
         });
     }
 
@@ -712,17 +717,8 @@ function populateFormDropdowns() {
         });
     }
 
-    // Populate member dropdown for borrowing if exists
-    const memberSelect = document.getElementById('borrowMember');
-    if (memberSelect) {
-        memberSelect.innerHTML = '<option value="">Select a member</option>';
-        customersData.forEach(member => {
-            const option = document.createElement('option');
-            option.value = member.id;
-            option.textContent = member.name;
-            memberSelect.appendChild(option);
-        });
-    }
+    // Note: Member dropdown for borrowing is now handled by populateBorrowMemberDropdown()
+    // which creates a searchable dropdown instead of a regular select
 }
 
 /**
@@ -995,10 +991,19 @@ function openEditBookModal(bookId) {
         authorInput.value = book.author || (book.authors && book.authors.length > 0 ? book.authors[0].name : '');
     }
 
-    // Set single genre dropdown value
-    const genreDropdown = document.getElementById('bookGenre');
-    if (genreDropdown && book.genres && book.genres.length > 0) {
-        genreDropdown.value = book.genres[0].id;
+    // Set genre checkboxes
+    if (book.genres && book.genres.length > 0) {
+        const genreIds = book.genres.map(g => g.id.toString());
+        const genreCheckboxes = document.querySelectorAll('input[name="bookGenres"]');
+        genreCheckboxes.forEach(checkbox => {
+            checkbox.checked = genreIds.includes(checkbox.value);
+        });
+    } else {
+        // Uncheck all if no genres
+        const genreCheckboxes = document.querySelectorAll('input[name="bookGenres"]');
+        genreCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
     }
 
     // Set multi-select values for authors (backward compatibility)
@@ -1007,15 +1012,6 @@ function openEditBookModal(bookId) {
         const authorIds = book.authors.map(a => a.id.toString());
         Array.from(authorSelect.options).forEach(opt => {
             opt.selected = authorIds.includes(opt.value);
-        });
-    }
-
-    // Set multi-select values for genres (backward compatibility)
-    const genreSelect = document.getElementById('bookGenres');
-    if (genreSelect && book.genres) {
-        const genreIds = book.genres.map(g => g.id.toString());
-        Array.from(genreSelect.options).forEach(opt => {
-            opt.selected = genreIds.includes(opt.value);
         });
     }
 
@@ -1093,11 +1089,12 @@ async function handleBookFormSubmit() {
     }
 
     // Get selected genre from single dropdown
-    const genreDropdown = document.getElementById('bookGenre');
-    const genreId = genreDropdown?.value;
+    // Get selected genre IDs from checkboxes
+    const genreCheckboxes = document.querySelectorAll('input[name="bookGenres"]:checked');
+    const genreIds = Array.from(genreCheckboxes).map(cb => parseInt(cb.value));
 
-    if (!genreId) {
-        alert('Please select a genre');
+    if (genreIds.length === 0) {
+        alert('Please select at least one genre');
         return;
     }
 
@@ -1193,14 +1190,24 @@ function openDeleteModal(bookId) {
  * Confirm and execute deletion
  */
 async function confirmDelete() {
+    console.log('confirmDelete called', { bookToDelete, userToDelete, deleteItemType });
+
     if (bookToDelete && deleteItemType === 'book') {
         await deleteBook(bookToDelete.id);
         bookToDelete = null;
     } else if (userToDelete && deleteItemType) {
-        await deleteUser(userToDelete.id, deleteItemType);
+        console.log('Deleting user:', userToDelete.id, 'type:', deleteItemType);
+        try {
+            await deleteUser(userToDelete.id, deleteItemType);
+        } catch (err) {
+            console.error('Error in deleteUser:', err);
+            alert('Error deleting user: ' + err.message);
+        }
         userToDelete = null;
+    } else {
+        console.log('No item to delete - userToDelete:', userToDelete, 'deleteItemType:', deleteItemType);
     }
-    
+
     deleteItemType = null;
     closeDeleteModal();
 }
@@ -1290,7 +1297,8 @@ function closeBookModal() {
 
 function closeDeleteModal() {
     hideModal('deleteModal');
-    bookToDelete = null;
+    // Don't reset variables here - confirmDelete handles that
+    // Only reset if modal is closed without confirming
 }
 
 // ========================================
@@ -1360,8 +1368,9 @@ function openBorrowModal(bookId) {
         if (borrowNotes) borrowNotes.value = '';
 
         // Reset member selection
-        const borrowMember = document.getElementById('borrowMember');
-        if (borrowMember) borrowMember.value = '';
+        if (typeof window.resetBorrowMemberDropdown === 'function') {
+            window.resetBorrowMemberDropdown();
+        }
 
     } else if (!book.isAvailable || book.borrowingId) {
         // Show return form for borrowed book
@@ -1402,19 +1411,155 @@ function openBorrowModal(bookId) {
 }
 
 /**
- * Populate member dropdown for borrowing
+ * Populate member dropdown for borrowing (searchable)
  */
 function populateBorrowMemberDropdown() {
-    const memberSelect = document.getElementById('borrowMember');
-    if (memberSelect && customersData) {
-        memberSelect.innerHTML = '<option value="">Select a customer</option>';
-        customersData.forEach(member => {
-            const option = document.createElement('option');
-            option.value = member.id;
-            option.textContent = `${member.name} (${member.email})`;
-            memberSelect.appendChild(option);
-        });
+    const searchInput = document.getElementById('borrowMemberSearch');
+    const hiddenInput = document.getElementById('borrowMember');
+    const dropdownList = document.getElementById('borrowMemberList');
+    
+    if (!searchInput || !hiddenInput || !dropdownList || !customersData) {
+        return;
     }
+
+    // Store all customers for filtering
+    let allCustomers = [...customersData];
+    let selectedCustomer = null;
+
+    // Function to filter and display customers
+    function filterCustomers(searchTerm = '') {
+        const term = searchTerm.toLowerCase().trim();
+        let filtered = allCustomers;
+
+        if (term) {
+            filtered = allCustomers.filter(member => {
+                const name = (member.name || '').toLowerCase();
+                const email = (member.email || '').toLowerCase();
+                const phone = (member.phone || '').toLowerCase();
+                return name.includes(term) || email.includes(term) || phone.includes(term);
+            });
+        }
+
+        // Clear and populate dropdown
+        dropdownList.innerHTML = '';
+
+        if (filtered.length === 0) {
+            dropdownList.innerHTML = '<div class="dropdown-list-empty">No customers found</div>';
+            dropdownList.style.display = 'block';
+            return;
+        }
+
+        // Show up to 10 results
+        filtered.slice(0, 10).forEach(member => {
+            const item = document.createElement('div');
+            item.className = 'dropdown-list-item';
+            item.dataset.id = member.id;
+            item.innerHTML = `
+                <span class="item-name">${escapeHtml(member.name)}</span>
+                <span class="item-email">${escapeHtml(member.email)}</span>
+            `;
+            
+            item.addEventListener('click', () => {
+                selectedCustomer = member;
+                searchInput.value = `${member.name} (${member.email})`;
+                hiddenInput.value = member.id;
+                dropdownList.style.display = 'none';
+                
+                // Remove required validation error if any
+                searchInput.setCustomValidity('');
+            });
+            
+            dropdownList.appendChild(item);
+        });
+
+        dropdownList.style.display = 'block';
+    }
+
+    // Handle input/search
+    searchInput.addEventListener('input', (e) => {
+        const value = e.target.value;
+        if (value && !selectedCustomer) {
+            filterCustomers(value);
+        } else if (!value) {
+            selectedCustomer = null;
+            hiddenInput.value = '';
+            dropdownList.style.display = 'none';
+        }
+    });
+
+    // Handle focus
+    searchInput.addEventListener('focus', () => {
+        if (searchInput.value && !selectedCustomer) {
+            filterCustomers(searchInput.value);
+        } else if (!selectedCustomer) {
+            filterCustomers(''); // Show all on focus
+        }
+    });
+
+    // Handle click outside to close dropdown
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('borrowMemberDropdown');
+        if (dropdown && !dropdown.contains(e.target)) {
+            dropdownList.style.display = 'none';
+        }
+    });
+
+    // Handle keyboard navigation
+    let selectedIndex = -1;
+    searchInput.addEventListener('keydown', (e) => {
+        const items = dropdownList.querySelectorAll('.dropdown-list-item');
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+            updateSelection(items, selectedIndex);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedIndex = Math.max(selectedIndex - 1, -1);
+            updateSelection(items, selectedIndex);
+        } else if (e.key === 'Enter' && selectedIndex >= 0 && items[selectedIndex]) {
+            e.preventDefault();
+            items[selectedIndex].click();
+        } else if (e.key === 'Escape') {
+            dropdownList.style.display = 'none';
+            selectedIndex = -1;
+        }
+    });
+
+    function updateSelection(items, index) {
+        items.forEach((item, i) => {
+            item.classList.toggle('selected', i === index);
+        });
+        if (index >= 0 && items[index]) {
+            items[index].scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    // Clear selection when input is cleared
+    searchInput.addEventListener('blur', () => {
+        // Delay to allow click events to fire first
+        setTimeout(() => {
+            if (!selectedCustomer && !hiddenInput.value) {
+                searchInput.value = '';
+            }
+        }, 200);
+    });
+
+    // Validation
+    searchInput.addEventListener('invalid', () => {
+        if (!hiddenInput.value) {
+            searchInput.setCustomValidity('Please select a customer');
+        }
+    });
+
+    // Reset function
+    window.resetBorrowMemberDropdown = function() {
+        selectedCustomer = null;
+        searchInput.value = '';
+        hiddenInput.value = '';
+        dropdownList.style.display = 'none';
+        searchInput.setCustomValidity('');
+    };
 }
 
 /**
@@ -1649,6 +1794,11 @@ function closeBorrowModal() {
     hideModal('borrowModal');
     const borrowForm = document.getElementById('borrowForm');
     if (borrowForm) borrowForm.reset();
+
+    // Reset searchable dropdown
+    if (typeof window.resetBorrowMemberDropdown === 'function') {
+        window.resetBorrowMemberDropdown();
+    }
 
     // Reset UI elements
     const customDurationGroup = document.getElementById('customDurationGroup');
@@ -2840,6 +2990,51 @@ function renderCustomersTable() {
 }
 
 /**
+ * Render customers table for Admin Dashboard (Delete only - no Edit)
+ */
+function renderAdminCustomersTable() {
+    const tableBody = document.getElementById('customersTableBody');
+    const emptyState = document.getElementById('customersEmptyState');
+
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '';
+
+    // Always use filtered data - it's initialized with all data on load
+    const dataToRender = filteredCustomersData;
+
+    if (dataToRender.length === 0) {
+        if (emptyState) emptyState.style.display = 'block';
+        return;
+    }
+
+    if (emptyState) emptyState.style.display = 'none';
+
+    dataToRender.forEach(customer => {
+        const row = document.createElement('tr');
+        const statusBadge = customer.isActive !== false
+            ? '<span class="badge badge-success">Active</span>'
+            : '<span class="badge badge-secondary">Inactive</span>';
+        row.innerHTML = `
+            <td>${customer.id}</td>
+            <td>${escapeHtml(customer.name)}</td>
+            <td>${escapeHtml(customer.email)}</td>
+            <td>${escapeHtml(customer.phone || 'N/A')}</td>
+            <td>${formatDate(customer.joinedDate)}</td>
+            <td>${statusBadge}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn btn-sm btn-delete" onclick="openDeleteUserModal(${customer.id}, 'customer')">
+                        Delete
+                    </button>
+                </div>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+/**
  * Filter and sort admin customers table
  */
 function filterAdminCustomers() {
@@ -2884,7 +3079,12 @@ function filterAdminCustomers() {
     }
 
     filteredCustomersData = filtered;
-    renderCustomersTable();
+    // Render correct table based on page (admin vs superadmin)
+    if (window.location.pathname.includes('superadmin')) {
+        renderCustomersTable();
+    } else {
+        renderAdminCustomersTable();
+    }
 }
 
 /**
@@ -2898,7 +3098,12 @@ function clearAdminCustomerFilters() {
     if (sortSelect) sortSelect.value = 'default';
 
     filteredCustomersData = [...customersData];
-    renderCustomersTable();
+    // Render correct table based on page (admin vs superadmin)
+    if (window.location.pathname.includes('superadmin')) {
+        renderCustomersTable();
+    } else {
+        renderAdminCustomersTable();
+    }
 }
 
 /**
@@ -3103,12 +3308,33 @@ function openAddUserModal(type) {
  * Open edit user modal
  */
 function openEditUserModal(userId, type, adminType = 'regular') {
-    const userData = type === 'customer' 
-        ? customersData.find(u => u.id === userId)
-        : adminsData.find(u => u.id === userId);
+    console.log('openEditUserModal called:', { userId, type, adminType });
     
-    if (!userData) return;
+    let userData;
+    if (type === 'customer') {
+        userData = customersData.find(u => u.id === userId);
+    } else {
+        // For admins, we need to match both ID and adminType to avoid conflicts
+        // (since regular admins and super admins can have the same ID)
+        userData = adminsData.find(u => u.id === userId && u.adminType === adminType);
+        
+        // If not found with adminType, try without it (for backward compatibility)
+        if (!userData) {
+            userData = adminsData.find(u => u.id === userId);
+            if (userData) {
+                console.warn('Found admin without adminType match, using found adminType:', userData.adminType);
+                adminType = userData.adminType || adminType;
+            }
+        }
+    }
     
+    if (!userData) {
+        console.error('User not found:', { userId, type, adminType, availableAdmins: adminsData.map(a => ({ id: a.id, adminType: a.adminType })) });
+        alert('User not found. Please refresh the page and try again.');
+        return;
+    }
+    
+    console.log('Found userData:', userData);
     userToEdit = { ...userData, adminType };
     
     const modalTitle = document.getElementById('userModalTitle');
@@ -3186,9 +3412,20 @@ function openEditUserModal(userId, type, adminType = 'regular') {
     const userPasswordField = document.getElementById('userPassword');
     if (userPasswordField) userPasswordField.value = '';
     
-    if (type === 'admin' && userData.role) {
+    // Set role for admin editing
+    if (type === 'admin') {
         const userRole = document.getElementById('userRole');
-        if (userRole) userRole.value = userData.role;
+        if (userRole) {
+            // Map adminType to role display value
+            if (userData.role) {
+                userRole.value = userData.role;
+            } else if (adminType === 'super') {
+                userRole.value = 'Super Admin';
+            } else {
+                userRole.value = 'Admin';
+            }
+            console.log('Set role field to:', userRole.value);
+        }
     }
     
     // Customer membership end date
@@ -3324,7 +3561,12 @@ async function handleUserFormSubmit() {
     try {
         let response;
         const endpoint = userType === 'customer' ? '/api/members' : '/api/admins';
-        
+
+        // Check if role changed for existing admin
+        const newRole = document.getElementById('userRole')?.value;
+        const originalRole = userToEdit?.role || (userToEdit?.adminType === 'super' ? 'Super Admin' : 'Admin');
+        const roleChanged = userType === 'admin' && userId && newRole && originalRole !== newRole;
+
         if (userId) {
             // Update existing user
             response = await fetch(`http://localhost:3000${endpoint}/${userId}`, {
@@ -3342,10 +3584,44 @@ async function handleUserFormSubmit() {
                 body: JSON.stringify(userData)
             });
         }
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
+            // If role changed, call the role change endpoint
+            if (roleChanged) {
+                console.log('Role changed detected, calling role change endpoint:', {
+                    userId,
+                    currentRole: originalRole,
+                    newRole: newRole,
+                    adminType: userData.adminType
+                });
+                
+                const roleChangeResponse = await fetch(`http://localhost:3000/api/admins/${userId}/role`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        currentRole: originalRole,
+                        newRole: newRole,
+                        adminType: userData.adminType
+                    })
+                });
+
+                const roleChangeData = await roleChangeResponse.json();
+
+                if (!roleChangeData.success) {
+                    alert(roleChangeData.message || 'Failed to change role');
+                    return; // Don't reload if role change failed
+                } else {
+                    console.log('Role changed successfully:', roleChangeData);
+                    // Update the new ID if role change returned one
+                    if (roleChangeData.data && roleChangeData.data.newId) {
+                        console.log('New admin ID after role change:', roleChangeData.data.newId);
+                    }
+                }
+            }
+
             if (userType === 'customer') {
                 await loadCustomers();
                 renderCustomersTable();
@@ -3368,15 +3644,24 @@ async function handleUserFormSubmit() {
  * Open delete user modal
  */
 function openDeleteUserModal(userId, type, adminType = 'regular') {
-    const userData = type === 'customer' 
+    console.log('openDeleteUserModal called:', { userId, type, adminType });
+
+    const userData = type === 'customer'
         ? customersData.find(u => u.id === userId)
         : adminsData.find(u => u.id === userId);
-    
-    if (!userData) return;
-    
+
+    console.log('Found userData:', userData);
+
+    if (!userData) {
+        console.error('User not found in data array');
+        return;
+    }
+
     userToDelete = { ...userData, adminType };
     bookToDelete = null;
     deleteItemType = type;
+
+    console.log('Set userToDelete:', userToDelete, 'deleteItemType:', deleteItemType);
     
     const deleteMessage = document.getElementById('deleteMessage');
     if (deleteMessage) {
@@ -3396,26 +3681,69 @@ function openDeleteUserModal(userId, type, adminType = 'regular') {
  */
 async function deleteUser(userId, type) {
     try {
+        if (!userId) {
+            console.error('deleteUser: userId is missing');
+            alert('Error: User ID is missing. Cannot delete.');
+            return;
+        }
+
         const adminType = userToDelete?.adminType || 'regular';
-        const endpoint = type === 'customer' 
+        const endpoint = type === 'customer'
             ? `/api/members/${userId}`
             : `/api/admins/${userId}?type=${adminType}`;
-        
+
+        console.log('deleteUser called:', { userId, type, endpoint, userToDelete });
+
         const response = await fetch(`http://localhost:3000${endpoint}`, {
             method: 'DELETE',
-            credentials: 'include'
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
-        
+
+        console.log('Delete response status:', response.status);
+
+        // Check if response is ok before parsing JSON
+        if (!response.ok) {
+            let errorText;
+            try {
+                const errorData = await response.json();
+                errorText = errorData.message || errorData.error || 'Unknown error';
+            } catch (e) {
+                errorText = await response.text();
+            }
+            console.error('Delete failed with status:', response.status, errorText);
+            alert(`Failed to delete user: ${errorText}`);
+            return;
+        }
+
         const data = await response.json();
-        
+        console.log('Delete response data:', data);
+
         if (data.success) {
             if (type === 'customer') {
+                // Reload customers from database
                 await loadCustomers();
-                renderCustomersTable();
+                // Update filtered data to match loaded data
+                filteredCustomersData = [...customersData];
+                // Render correct table based on page (admin vs superadmin)
+                if (window.location.pathname.includes('superadmin')) {
+                    renderCustomersTable();
+                } else {
+                    renderAdminCustomersTable();
+                }
+                console.log('Customer deleted successfully. Refreshed table.');
             } else {
+                // Reload admins from database
                 await loadAdmins();
+                // Update filtered data to match loaded data
+                filteredAdminsData = [...adminsData];
                 renderAdminsTable();
+                console.log('Admin deleted successfully. Refreshed table.');
             }
+            // Show success message
+            alert('User deleted successfully');
             console.log(`${type} deleted:`, userId);
         } else {
             alert(data.message || 'Failed to delete user');
@@ -3542,11 +3870,14 @@ async function initProfilePage() {
     const superAdminLink = document.getElementById('superAdminLink');
     const adminLink = document.getElementById('adminLink');
 
+    // Super admins should only see Super Admin Dashboard link
+    // Regular admins should only see Admin Dashboard link
     if (superAdminLink) {
         superAdminLink.style.display = userType === 'superadmin' ? 'block' : 'none';
     }
     if (adminLink) {
-        adminLink.style.display = (userType === 'admin' || userType === 'superadmin') ? 'block' : 'none';
+        // Only show admin link for regular admins, NOT for super admins
+        adminLink.style.display = userType === 'admin' ? 'block' : 'none';
     }
 
     // Show/hide sections based on user type

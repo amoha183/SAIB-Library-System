@@ -43,3 +43,5 @@ SELECT admin_id as ID, email, SUBSTRING(password, 1, 20) as password_prefix FROM
 SELECT 'Updated Members (first 5):' as 'Status';
 SELECT member_id as ID, email, SUBSTRING(password, 1, 20) as password_prefix FROM members;
 
+
+

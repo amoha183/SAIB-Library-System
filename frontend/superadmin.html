@@ -528,11 +528,13 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="bookGenre" class="form-label">Genre <span class="required">*</span></label>
-                        <select id="bookGenre" class="form-input" required>
-                            <option value="">Select a genre</option>
-                            <!-- Options populated dynamically from database -->
-                        </select>
+                        <label class="form-label">Genres <span class="required">*</span></label>
+                        <div id="bookGenresContainer" class="genres-checkbox-container">
+                            <!-- Genres will be populated dynamically -->
+                        </div>
+                        <small class="form-hint" style="display: block; margin-top: 8px; color: var(--gray-600);">
+                            Select one or more genres for this book
+                        </small>
                     </div>
                 </div>
 
@@ -859,10 +861,18 @@
                 <div id="borrowFormContent">
                     <div class="form-group">
                         <label for="borrowMember" class="form-label">Select Customer <span class="required">*</span></label>
-                        <select id="borrowMember" class="form-input" required>
-                            <option value="">Select a customer</option>
-                            <!-- Members will be populated dynamically -->
-                        </select>
+                        <div class="searchable-dropdown" id="borrowMemberDropdown">
+                            <input 
+                                type="text" 
+                                id="borrowMemberSearch" 
+                                class="form-input" 
+                                placeholder="Search by name, email, or phone..."
+                                autocomplete="off"
+                                required
+                            >
+                            <input type="hidden" id="borrowMember" name="borrowMember">
+                            <div class="dropdown-list" id="borrowMemberList" style="display: none;"></div>
+                        </div>
                     </div>
 
                     <div class="form-group">
