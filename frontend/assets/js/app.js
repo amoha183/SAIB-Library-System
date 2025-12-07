@@ -925,10 +925,11 @@ function openAddBookModal() {
         Array.from(authorSelect.options).forEach(opt => opt.selected = false);
     }
     
-    const genreSelect = document.getElementById('bookGenres');
-    if (genreSelect) {
-        Array.from(genreSelect.options).forEach(opt => opt.selected = false);
-    }
+    // Reset genre checkboxes
+    const genreCheckboxes = document.querySelectorAll('input[name="bookGenres"]');
+    genreCheckboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
     
     showModal('bookModal');
 }
@@ -1115,7 +1116,7 @@ async function handleBookFormSubmit() {
         language: language || 'English',
         page_count: pageCount ? parseInt(pageCount) : null,
         author_name: authorName,
-        genre_id: parseInt(genreId),
+        genre_ids: genreIds,  // Array of genre IDs
         publisher_id: publisherId,
         total_copies: parseInt(totalCopies)
     };
